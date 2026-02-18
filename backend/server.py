@@ -409,13 +409,21 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
     
     try:
         # Call LiteLLM
+        # For openai_compatible, use openai/ prefix
+        model_name = llm_config['model']
+        if llm_config['provider'] == 'openai_compatible':
+            # Use openai/ prefix for OpenAI-compatible APIs
+            model_prefix = "openai/"
+        else:
+            model_prefix = f"{llm_config['provider']}/"
+        
         response = await acompletion(
-            model=f"{llm_config['provider']}/{llm_config['model']}",
+            model=f"{model_prefix}{model_name}",
             messages=[
                 {"role": "system", "content": "You are a helpful career assistant helping users track and manage their job applications. Be concise and actionable."},
                 {"role": "user", "content": msg.message}
             ],
-            api_key=llm_config.get('api_key'),
+            api_key=llm_config.get('api_key') or 'dummy',
             base_url=llm_config.get('base_url')
         )
         
