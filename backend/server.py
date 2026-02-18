@@ -1035,7 +1035,7 @@ async def create_todo(todo: TodoCreate, user_id: str = Depends(get_current_user)
 
 @api_router.get("/todos", response_model=List[Todo])
 async def get_todos(user_id: str = Depends(get_current_user)):
-    todos = await db.todos.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    todos = await db.todos.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).to_list(1000)
     return [deserialize_doc(t) for t in todos]
 
 @api_router.put("/todos/{todo_id}")
@@ -1052,10 +1052,14 @@ async def toggle_todo(todo_id: str, user_id: str = Depends(get_current_user)):
 
 @api_router.delete("/todos/{todo_id}")
 async def delete_todo(todo_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.todos.delete_one({"id": todo_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.todos.update_one(
+        {"id": todo_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Todo not found")
-    return {"message": "Todo deleted"}
+    return {"message": "Todo moved to trash", "can_undo": True}
 
 # ============ KNOWLEDGE ROUTES ============
 
