@@ -984,6 +984,108 @@ async def delete_portal(portal_id: str, user_id: str = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Portal not found")
     return {"message": "Portal deleted"}
 
+# ============ REMINDERS ROUTES ============
+
+@api_router.post("/reminders", response_model=Reminder)
+async def create_reminder(reminder: ReminderCreate, user_id: str = Depends(get_current_user)):
+    reminder_obj = Reminder(user_id=user_id, **reminder.model_dump())
+    await db.reminders.insert_one(serialize_doc(reminder_obj.model_dump()))
+    return reminder_obj
+
+@api_router.get("/reminders", response_model=List[Reminder])
+async def get_reminders(user_id: str = Depends(get_current_user)):
+    reminders = await db.reminders.find({"user_id": user_id}, {"_id": 0}).sort("reminder_date", 1).to_list(1000)
+    return [deserialize_doc(r) for r in reminders]
+
+@api_router.get("/reminders/upcoming", response_model=List[Reminder])
+async def get_upcoming_reminders(user_id: str = Depends(get_current_user)):
+    """Get upcoming reminders (not completed, date <= 7 days from now)"""
+    future_date = datetime.now(timezone.utc) + timedelta(days=7)
+    reminders = await db.reminders.find({
+        "user_id": user_id,
+        "completed": False,
+        "reminder_date": {"$lte": future_date.isoformat()}
+    }, {"_id": 0}).sort("reminder_date", 1).to_list(100)
+    return [deserialize_doc(r) for r in reminders]
+
+@api_router.put("/reminders/{reminder_id}/complete")
+async def complete_reminder(reminder_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.reminders.update_one(
+        {"id": reminder_id, "user_id": user_id},
+        {"$set": {"completed": True}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    return {"message": "Reminder completed"}
+
+@api_router.delete("/reminders/{reminder_id}")
+async def delete_reminder(reminder_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.reminders.delete_one({"id": reminder_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    return {"message": "Reminder deleted"}
+
+# ============ TARGETS ROUTES ============
+
+@api_router.post("/targets", response_model=Target)
+async def create_target(target: TargetCreate, user_id: str = Depends(get_current_user)):
+    target_obj = Target(user_id=user_id, **target.model_dump())
+    await db.targets.insert_one(serialize_doc(target_obj.model_dump()))
+    return target_obj
+
+@api_router.get("/targets", response_model=List[Target])
+async def get_targets(user_id: str = Depends(get_current_user)):
+    targets = await db.targets.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(t) for t in targets]
+
+@api_router.put("/targets/{target_id}/progress")
+async def update_target_progress(target_id: str, current_value: int, user_id: str = Depends(get_current_user)):
+    result = await db.targets.update_one(
+        {"id": target_id, "user_id": user_id},
+        {"$set": {"current_value": current_value}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Target not found")
+    return {"message": "Target updated"}
+
+@api_router.delete("/targets/{target_id}")
+async def delete_target(target_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.targets.delete_one({"id": target_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Target not found")
+    return {"message": "Target deleted"}
+
+# ============ SYSTEMS ROUTES ============
+
+@api_router.post("/systems", response_model=System)
+async def create_system(system: SystemCreate, user_id: str = Depends(get_current_user)):
+    system_obj = System(user_id=user_id, **system.model_dump())
+    await db.systems.insert_one(serialize_doc(system_obj.model_dump()))
+    return system_obj
+
+@api_router.get("/systems", response_model=List[System])
+async def get_systems(user_id: str = Depends(get_current_user)):
+    systems = await db.systems.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(s) for s in systems]
+
+@api_router.put("/systems/{system_id}/execute")
+async def execute_system(system_id: str, user_id: str = Depends(get_current_user)):
+    """Mark system as executed"""
+    result = await db.systems.update_one(
+        {"id": system_id, "user_id": user_id},
+        {"$set": {"last_executed": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="System not found")
+    return {"message": "System executed"}
+
+@api_router.delete("/systems/{system_id}")
+async def delete_system(system_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.systems.delete_one({"id": system_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="System not found")
+    return {"message": "System deleted"}
+
 # ============ ANALYTICS ROUTES ============
 
 @api_router.get("/analytics/dashboard")
