@@ -10,6 +10,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import os
 import logging
+import json
 from pathlib import Path
 import uuid
 from litellm import acompletion
