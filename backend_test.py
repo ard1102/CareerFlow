@@ -316,17 +316,19 @@ def main():
     all_passed = tester.run_all_tests()
     
     # Save detailed results
+    results_data = {
+        'summary': {
+            'total_tests': tester.tests_run,
+            'passed': tester.tests_passed,
+            'failed': tester.tests_run - tester.tests_passed,
+            'success_rate': (tester.tests_passed/tester.tests_run)*100 if tester.tests_run > 0 else 0
+        },
+        'detailed_results': tester.test_results,
+        'timestamp': datetime.now().isoformat()
+    }
+    
     with open('/app/test_reports/backend_api_results.json', 'w') as f:
-        json.dump({
-            'summary': {
-                'total_tests': tester.tests_run,
-                'passed': tester.tests_passed,
-                'failed': tester.tests_run - tester.tests_passed,
-                'success_rate': (tester.tests_passed/tester.tests_run)*100 if tester.tests_run > 0 else 0
-            },
-            'detailed_results': tester.test_results,
-            'timestamp': datetime.now().isoformat()
-        }, indent=2)
+        json.dump(results_data, f, indent=2)
     
     return 0 if all_passed else 1
 
