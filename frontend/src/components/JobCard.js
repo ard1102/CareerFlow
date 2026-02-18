@@ -92,6 +92,17 @@ const JobCard = ({ job, onDelete, onUpdate, onInterviewPrep }) => {
                     </a>
                   </Button>
                 )}
+                {job.description && (job.status === 'interview' || job.status === 'applied') && onInterviewPrep && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onInterviewPrep(job.id)}
+                    className="rounded-full h-9 text-violet-600 hover:bg-violet-50"
+                  >
+                    <GraduationCap className="w-4 h-4 mr-1" />
+                    Interview Prep
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
