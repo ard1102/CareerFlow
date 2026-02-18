@@ -1208,6 +1208,87 @@ Description: {job.get('description', '')[:1000]}
         logger.error(f"Resume tailoring error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"AI tailoring error: {str(e)}")
 
+@api_router.post("/resume/upload")
+async def upload_resume(file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
+    """Upload resume file (PDF or DOCX) and parse it with AI"""
+    
+    # Validate file type
+    allowed_types = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+    
+    try:
+        # Read file
+        file_bytes = await file.read()
+        
+        # Extract text based on file type
+        if file.content_type == 'application/pdf':
+            resume_text = extract_text_from_pdf(file_bytes)
+        else:  # DOCX
+            resume_text = extract_text_from_docx(file_bytes)
+        
+        if not resume_text:
+            raise HTTPException(status_code=400, detail="Could not extract text from file")
+        
+        # Parse with rule-based parser first
+        parsed_data = parse_resume_with_ai(resume_text)
+        
+        # Get user's LLM config for enhanced parsing
+        llm_config = await db.llm_configs.find_one({"user_id": user_id})
+        
+        if llm_config:
+            try:
+                # Use AI for better parsing
+                model_name = llm_config['model']
+                if llm_config['provider'] == 'openai_compatible':
+                    model_prefix = "openai/"
+                elif llm_config['provider'] == 'openrouter':
+                    model_prefix = "openrouter/"
+                    if '/' not in model_name:
+                        model_name = f"openai/{model_name}"
+                else:
+                    model_prefix = f"{llm_config['provider']}/"
+                
+                response = await acompletion(
+                    model=f"{model_prefix}{model_name}",
+                    messages=[
+                        {"role": "system", "content": "You are a resume parser. Extract structured data from resumes. Respond ONLY with valid JSON, no markdown or extra text."},
+                        {"role": "user", "content": f"Parse this resume and return JSON with fields: name, email, phone, location, summary (2-3 sentences), skills (array), years_of_experience (number), education (array), projects (array of project descriptions), work_authorization. Resume text:\n\n{resume_text[:3000]}"}
+                    ],
+                    api_key=llm_config.get('api_key') or 'dummy',
+                    base_url=llm_config.get('base_url')
+                )
+                
+                ai_response = response.choices[0].message.content
+                
+                # Try to parse AI response as JSON
+                import json
+                # Remove markdown code blocks if present
+                ai_response = ai_response.replace('```json', '').replace('```', '').strip()
+                ai_parsed = json.loads(ai_response)
+                
+                # Merge AI results with rule-based results (AI takes precedence)
+                for key in ai_parsed:
+                    if ai_parsed[key] and (not parsed_data.get(key) or key in ['summary', 'projects']):
+                        parsed_data[key] = ai_parsed[key]
+                
+            except Exception as e:
+                logger.warning(f"AI parsing failed, using rule-based: {e}")
+                # Continue with rule-based parsing
+        
+        return {
+            "success": True,
+            "parsed_data": parsed_data,
+            "raw_text_length": len(resume_text),
+            "message": "Resume parsed successfully. Review and save to profile."
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Resume upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
+
 # ============ ANALYTICS ROUTES ============
 
 @api_router.get("/analytics/dashboard")
