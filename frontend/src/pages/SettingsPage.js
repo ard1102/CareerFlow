@@ -54,6 +54,7 @@ const SettingsPage = () => {
     { value: 'anthropic', label: 'Anthropic (Claude)' },
     { value: 'gemini', label: 'Google Gemini' },
     { value: 'ollama', label: 'Ollama (Local)' },
+    { value: 'openai_compatible', label: 'OpenAI-Compatible (LM Studio, vLLM, etc.)' },
   ];
 
   return (
