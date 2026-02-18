@@ -609,6 +609,16 @@ async def get_chat_history(session_id: Optional[str] = None, user_id: str = Depe
     messages = await db.chat_messages.find(query, {"_id": 0}).sort("timestamp", 1).to_list(1000)
     return [deserialize_doc(msg) for msg in messages]
 
+@api_router.delete("/chat/clear")
+async def clear_chat_history(session_id: Optional[str] = None, user_id: str = Depends(get_current_user)):
+    """Clear chat history for a session or all sessions"""
+    query = {"user_id": user_id}
+    if session_id:
+        query["session_id"] = session_id
+    
+    result = await db.chat_messages.delete_many(query)
+    return {"deleted": result.deleted_count, "message": "Chat history cleared"}
+
 # ============ LLM CONFIG ROUTES ============
 
 @api_router.post("/llm-config", response_model=LLMConfig)
