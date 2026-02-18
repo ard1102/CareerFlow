@@ -40,6 +40,7 @@ const Sidebar = () => {
     { name: 'To-Do', path: '/todos', icon: CheckSquare },
     { name: 'Prompts', path: '/prompts', icon: FileText },
     { name: 'Profile', path: '/profile', icon: User },
+    { name: 'Trash', path: '/trash', icon: Trash2 },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
