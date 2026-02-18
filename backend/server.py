@@ -1,15 +1,18 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional
+from datetime import datetime, timezone, timedelta
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
 import uuid
-from datetime import datetime, timezone
-
+from litellm import acompletion
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +22,535 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Security
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 43200  # 30 days
 
-# Create a router with the /api prefix
+app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+# ============ MODELS ============
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
+    email: EmailStr
+    name: str
+    resume_info: Optional[str] = None
+    visa_status: Optional[str] = None
+    restrictions: Optional[List[str]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class JobCreate(BaseModel):
+    title: str
+    company: str
+    posting_url: Optional[str] = None
+    description: Optional[str] = None
+    pay: Optional[str] = None
+    work_auth: Optional[str] = None
+    location: Optional[str] = None
+    status: str = "pending"
+    notes: Optional[str] = None
+
+class Job(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    company: str
+    posting_url: Optional[str] = None
+    description: Optional[str] = None
+    pay: Optional[str] = None
+    work_auth: Optional[str] = None
+    location: Optional[str] = None
+    status: str = "pending"
+    contacts: Optional[List[str]] = []
+    resume_submitted: bool = False
+    applied_date: Optional[datetime] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CompanyCreate(BaseModel):
+    name: str
+    about: Optional[str] = None
+    stem_support: Optional[bool] = False
+    visa_sponsor: Optional[bool] = False
+    employee_count: Optional[str] = None
+    research: Optional[str] = None
+    user_comments: Optional[str] = None
+
+class Company(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    about: Optional[str] = None
+    stem_support: Optional[bool] = False
+    visa_sponsor: Optional[bool] = False
+    employee_count: Optional[str] = None
+    research: Optional[str] = None
+    user_comments: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ContactCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    company_id: Optional[str] = None
+    role: Optional[str] = None
+    how_met: Optional[str] = None
+    notes: Optional[str] = None
+    last_touch_date: Optional[datetime] = None
+
+class Contact(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    company_id: Optional[str] = None
+    role: Optional[str] = None
+    how_met: Optional[str] = None
+    notes: Optional[str] = None
+    last_touch_date: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ChatMessageCreate(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_id: str
+    message: str
+    response: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class LLMConfigCreate(BaseModel):
+    provider: str
+    model: str
+    api_key: Optional[str] = None
+    base_url: Optional[str] = None
 
-# Add your routes to the router instead of directly to app
+class LLMConfig(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    provider: str
+    model: str
+    api_key: Optional[str] = None
+    base_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TodoCreate(BaseModel):
+    title: str
+    category: Optional[str] = "general"
+    due_date: Optional[datetime] = None
+
+class Todo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    completed: bool = False
+    category: Optional[str] = "general"
+    due_date: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class KnowledgeCreate(BaseModel):
+    title: str
+    content: str
+    tags: Optional[List[str]] = []
+
+class Knowledge(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    content: str
+    tags: Optional[List[str]] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PromptCreate(BaseModel):
+    title: str
+    content: str
+    category: Optional[str] = "general"
+
+class Prompt(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    content: str
+    category: Optional[str] = "general"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ============ HELPER FUNCTIONS ============
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        return user_id
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+def serialize_doc(doc):
+    """Convert datetime objects to ISO strings for MongoDB storage"""
+    if isinstance(doc, dict):
+        return {k: v.isoformat() if isinstance(v, datetime) else v for k, v in doc.items()}
+    return doc
+
+def deserialize_doc(doc):
+    """Convert ISO strings back to datetime objects"""
+    if isinstance(doc, dict):
+        for key in ['created_at', 'updated_at', 'timestamp', 'applied_date', 'due_date', 'last_touch_date']:
+            if key in doc and isinstance(doc[key], str):
+                try:
+                    doc[key] = datetime.fromisoformat(doc[key])
+                except:
+                    pass
+    return doc
+
+# ============ AUTH ROUTES ============
+
+@api_router.post("/auth/register", response_model=Token)
+async def register(user: UserCreate):
+    existing_user = await db.users.find_one({"email": user.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_obj = User(
+        email=user.email,
+        name=user.name
+    )
+    user_dict = user_obj.model_dump()
+    user_dict['password_hash'] = hash_password(user.password)
+    
+    await db.users.insert_one(serialize_doc(user_dict))
+    
+    access_token = create_access_token(data={"sub": user_obj.id})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@api_router.post("/auth/login", response_model=Token)
+async def login(user: UserLogin):
+    db_user = await db.users.find_one({"email": user.email})
+    if not db_user or not verify_password(user.password, db_user.get('password_hash', '')):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    
+    access_token = create_access_token(data={"sub": db_user['id']})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@api_router.get("/auth/me", response_model=User)
+async def get_me(user_id: str = Depends(get_current_user)):
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return deserialize_doc(user)
+
+# ============ JOBS ROUTES ============
+
+@api_router.post("/jobs", response_model=Job)
+async def create_job(job: JobCreate, user_id: str = Depends(get_current_user)):
+    job_obj = Job(user_id=user_id, **job.model_dump())
+    if job.status == "applied" and not job_obj.applied_date:
+        job_obj.applied_date = datetime.now(timezone.utc)
+    
+    await db.jobs.insert_one(serialize_doc(job_obj.model_dump()))
+    return job_obj
+
+@api_router.get("/jobs", response_model=List[Job])
+async def get_jobs(user_id: str = Depends(get_current_user)):
+    jobs = await db.jobs.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(job) for job in jobs]
+
+@api_router.get("/jobs/{job_id}", response_model=Job)
+async def get_job(job_id: str, user_id: str = Depends(get_current_user)):
+    job = await db.jobs.find_one({"id": job_id, "user_id": user_id}, {"_id": 0})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return deserialize_doc(job)
+
+@api_router.put("/jobs/{job_id}", response_model=Job)
+async def update_job(job_id: str, job_update: JobCreate, user_id: str = Depends(get_current_user)):
+    existing_job = await db.jobs.find_one({"id": job_id, "user_id": user_id})
+    if not existing_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    update_data = job_update.model_dump()
+    update_data['updated_at'] = datetime.now(timezone.utc)
+    
+    if job_update.status == "applied" and not existing_job.get('applied_date'):
+        update_data['applied_date'] = datetime.now(timezone.utc)
+    
+    await db.jobs.update_one(
+        {"id": job_id, "user_id": user_id},
+        {"$set": serialize_doc(update_data)}
+    )
+    
+    updated_job = await db.jobs.find_one({"id": job_id}, {"_id": 0})
+    return deserialize_doc(updated_job)
+
+@api_router.delete("/jobs/{job_id}")
+async def delete_job(job_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.jobs.delete_one({"id": job_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"message": "Job deleted successfully"}
+
+# ============ COMPANIES ROUTES ============
+
+@api_router.post("/companies", response_model=Company)
+async def create_company(company: CompanyCreate, user_id: str = Depends(get_current_user)):
+    company_obj = Company(user_id=user_id, **company.model_dump())
+    await db.companies.insert_one(serialize_doc(company_obj.model_dump()))
+    return company_obj
+
+@api_router.get("/companies", response_model=List[Company])
+async def get_companies(user_id: str = Depends(get_current_user)):
+    companies = await db.companies.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(c) for c in companies]
+
+@api_router.get("/companies/{company_id}", response_model=Company)
+async def get_company(company_id: str, user_id: str = Depends(get_current_user)):
+    company = await db.companies.find_one({"id": company_id, "user_id": user_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return deserialize_doc(company)
+
+@api_router.delete("/companies/{company_id}")
+async def delete_company(company_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.companies.delete_one({"id": company_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return {"message": "Company deleted successfully"}
+
+# ============ CONTACTS ROUTES ============
+
+@api_router.post("/contacts", response_model=Contact)
+async def create_contact(contact: ContactCreate, user_id: str = Depends(get_current_user)):
+    contact_obj = Contact(user_id=user_id, **contact.model_dump())
+    await db.contacts.insert_one(serialize_doc(contact_obj.model_dump()))
+    return contact_obj
+
+@api_router.get("/contacts", response_model=List[Contact])
+async def get_contacts(user_id: str = Depends(get_current_user)):
+    contacts = await db.contacts.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(c) for c in contacts]
+
+@api_router.delete("/contacts/{contact_id}")
+async def delete_contact(contact_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.contacts.delete_one({"id": contact_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    return {"message": "Contact deleted successfully"}
+
+# ============ CHAT ROUTES ============
+
+@api_router.post("/chat/send")
+async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_current_user)):
+    session_id = msg.session_id or str(uuid.uuid4())
+    
+    # Get user's LLM config
+    llm_config = await db.llm_configs.find_one({"user_id": user_id})
+    
+    if not llm_config:
+        raise HTTPException(status_code=400, detail="Please configure your LLM settings first")
+    
+    try:
+        # Call LiteLLM
+        response = await acompletion(
+            model=f"{llm_config['provider']}/{llm_config['model']}",
+            messages=[
+                {"role": "system", "content": "You are a helpful career assistant helping users track and manage their job applications. Be concise and actionable."},
+                {"role": "user", "content": msg.message}
+            ],
+            api_key=llm_config.get('api_key'),
+            base_url=llm_config.get('base_url')
+        )
+        
+        response_text = response.choices[0].message.content
+        
+        # Save to database
+        chat_obj = ChatMessage(
+            user_id=user_id,
+            session_id=session_id,
+            message=msg.message,
+            response=response_text
+        )
+        await db.chat_messages.insert_one(serialize_doc(chat_obj.model_dump()))
+        
+        return {"response": response_text, "session_id": session_id}
+    
+    except Exception as e:
+        logger.error(f"Chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
+
+@api_router.get("/chat/history")
+async def get_chat_history(session_id: Optional[str] = None, user_id: str = Depends(get_current_user)):
+    query = {"user_id": user_id}
+    if session_id:
+        query["session_id"] = session_id
+    
+    messages = await db.chat_messages.find(query, {"_id": 0}).sort("timestamp", 1).to_list(1000)
+    return [deserialize_doc(msg) for msg in messages]
+
+# ============ LLM CONFIG ROUTES ============
+
+@api_router.post("/llm-config", response_model=LLMConfig)
+async def create_llm_config(config: LLMConfigCreate, user_id: str = Depends(get_current_user)):
+    # Delete existing config
+    await db.llm_configs.delete_many({"user_id": user_id})
+    
+    config_obj = LLMConfig(user_id=user_id, **config.model_dump())
+    await db.llm_configs.insert_one(serialize_doc(config_obj.model_dump()))
+    return config_obj
+
+@api_router.get("/llm-config")
+async def get_llm_config(user_id: str = Depends(get_current_user)):
+    config = await db.llm_configs.find_one({"user_id": user_id}, {"_id": 0})
+    if not config:
+        return None
+    return deserialize_doc(config)
+
+# ============ TODOS ROUTES ============
+
+@api_router.post("/todos", response_model=Todo)
+async def create_todo(todo: TodoCreate, user_id: str = Depends(get_current_user)):
+    todo_obj = Todo(user_id=user_id, **todo.model_dump())
+    await db.todos.insert_one(serialize_doc(todo_obj.model_dump()))
+    return todo_obj
+
+@api_router.get("/todos", response_model=List[Todo])
+async def get_todos(user_id: str = Depends(get_current_user)):
+    todos = await db.todos.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(t) for t in todos]
+
+@api_router.put("/todos/{todo_id}")
+async def toggle_todo(todo_id: str, user_id: str = Depends(get_current_user)):
+    todo = await db.todos.find_one({"id": todo_id, "user_id": user_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    
+    await db.todos.update_one(
+        {"id": todo_id},
+        {"$set": {"completed": not todo.get('completed', False)}}
+    )
+    return {"message": "Todo updated"}
+
+@api_router.delete("/todos/{todo_id}")
+async def delete_todo(todo_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.todos.delete_one({"id": todo_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    return {"message": "Todo deleted"}
+
+# ============ KNOWLEDGE ROUTES ============
+
+@api_router.post("/knowledge", response_model=Knowledge)
+async def create_knowledge(knowledge: KnowledgeCreate, user_id: str = Depends(get_current_user)):
+    knowledge_obj = Knowledge(user_id=user_id, **knowledge.model_dump())
+    await db.knowledge.insert_one(serialize_doc(knowledge_obj.model_dump()))
+    return knowledge_obj
+
+@api_router.get("/knowledge", response_model=List[Knowledge])
+async def get_knowledge(user_id: str = Depends(get_current_user)):
+    knowledge = await db.knowledge.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(k) for k in knowledge]
+
+@api_router.delete("/knowledge/{knowledge_id}")
+async def delete_knowledge(knowledge_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.knowledge.delete_one({"id": knowledge_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Knowledge not found")
+    return {"message": "Knowledge deleted"}
+
+# ============ PROMPTS ROUTES ============
+
+@api_router.post("/prompts", response_model=Prompt)
+async def create_prompt(prompt: PromptCreate, user_id: str = Depends(get_current_user)):
+    prompt_obj = Prompt(user_id=user_id, **prompt.model_dump())
+    await db.prompts.insert_one(serialize_doc(prompt_obj.model_dump()))
+    return prompt_obj
+
+@api_router.get("/prompts", response_model=List[Prompt])
+async def get_prompts(user_id: str = Depends(get_current_user)):
+    prompts = await db.prompts.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(p) for p in prompts]
+
+@api_router.delete("/prompts/{prompt_id}")
+async def delete_prompt(prompt_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.prompts.delete_one({"id": prompt_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return {"message": "Prompt deleted"}
+
+# ============ ANALYTICS ROUTES ============
+
+@api_router.get("/analytics/dashboard")
+async def get_dashboard_analytics(user_id: str = Depends(get_current_user)):
+    jobs = await db.jobs.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    
+    stats = {
+        "total": len(jobs),
+        "applied": len([j for j in jobs if j['status'] == 'applied']),
+        "interview": len([j for j in jobs if j['status'] == 'interview']),
+        "offer": len([j for j in jobs if j['status'] == 'offer']),
+        "rejected": len([j for j in jobs if j['status'] == 'rejected']),
+        "ghosted": len([j for j in jobs if j['status'] == 'ghosted']),
+        "pending": len([j for j in jobs if j['status'] == 'pending'])
+    }
+    
+    return stats
+
+# ============ ROOT & MIDDLEWARE ============
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "CareerFlow API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
@@ -76,13 +560,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
