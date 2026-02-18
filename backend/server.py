@@ -118,6 +118,8 @@ class Job(BaseModel):
     resume_submitted: bool = False
     applied_date: Optional[datetime] = None
     notes: Optional[str] = None
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
