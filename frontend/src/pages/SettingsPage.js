@@ -144,17 +144,28 @@ const SettingsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="base_url">Base URL (Optional)</Label>
+              <Label htmlFor="base_url">Base URL {(config.provider === 'ollama' || config.provider === 'openai_compatible') && '*'}</Label>
               <Input
                 id="base_url"
                 data-testid="base-url-input"
                 type="url"
-                placeholder="e.g., http://localhost:11434 for Ollama"
+                placeholder={
+                  config.provider === 'ollama' 
+                    ? 'http://localhost:11434' 
+                    : config.provider === 'openai_compatible'
+                    ? 'http://localhost:1234/v1 (LM Studio) or http://localhost:8000/v1 (vLLM)'
+                    : 'Optional - for custom endpoints'
+                }
                 value={config.base_url}
                 onChange={(e) => setConfig({ ...config, base_url: e.target.value })}
+                required={config.provider === 'ollama' || config.provider === 'openai_compatible'}
                 className="h-12 rounded-xl"
               />
-              <p className="text-xs text-slate-500">Required for Ollama or custom endpoints (e.g., http://localhost:11434)</p>
+              <p className="text-xs text-slate-500">
+                {config.provider === 'openai_compatible'
+                  ? 'Must include /v1 at the end (e.g., http://localhost:1234/v1)'
+                  : 'Required for Ollama or custom endpoints (e.g., http://localhost:11434)'}
+              </p>
             </div>
 
             <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex gap-3">
