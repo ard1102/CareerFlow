@@ -408,11 +408,78 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
         raise HTTPException(status_code=400, detail="Please configure your LLM settings first")
     
     try:
-        # Call LiteLLM
-        # For openai_compatible, use openai/ prefix
+        # Define tools for function calling
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_jobs",
+                    "description": "Get list of user's job applications. Can filter by status (pending, applied, interview, offer, rejected, ghosted).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "applied", "interview", "offer", "rejected", "ghosted", "all"],
+                                "description": "Filter jobs by status. Use 'all' to get all jobs."
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_job_status",
+                    "description": "Update the status of a job application.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "job_id": {
+                                "type": "string",
+                                "description": "The ID of the job to update"
+                            },
+                            "new_status": {
+                                "type": "string",
+                                "enum": ["pending", "applied", "interview", "offer", "rejected", "ghosted"],
+                                "description": "The new status for the job"
+                            }
+                        },
+                        "required": ["job_id", "new_status"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "add_job",
+                    "description": "Add a new job application to track.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "title": {"type": "string", "description": "Job title"},
+                            "company": {"type": "string", "description": "Company name"},
+                            "location": {"type": "string", "description": "Job location"},
+                            "status": {"type": "string", "enum": ["pending", "applied", "interview"], "description": "Initial status"},
+                            "notes": {"type": "string", "description": "Any notes about the job"}
+                        },
+                        "required": ["title", "company"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_dashboard_stats",
+                    "description": "Get statistics about job applications (total, by status).",
+                    "parameters": {"type": "object", "properties": {}}
+                }
+            }
+        ]
+        
+        # Call LiteLLM with tools
         model_name = llm_config['model']
         if llm_config['provider'] == 'openai_compatible':
-            # Use openai/ prefix for OpenAI-compatible APIs
             model_prefix = "openai/"
         else:
             model_prefix = f"{llm_config['provider']}/"
@@ -420,12 +487,36 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
         response = await acompletion(
             model=f"{model_prefix}{model_name}",
             messages=[
-                {"role": "system", "content": "You are a helpful career assistant helping users track and manage their job applications. Be concise and actionable."},
+                {"role": "system", "content": "You are a helpful career assistant for CareerFlow. You help users track their job applications, update statuses, and manage their job search. Use the available functions to access and update the user's actual job data. Be specific and actionable."},
                 {"role": "user", "content": msg.message}
             ],
+            tools=tools,
             api_key=llm_config.get('api_key') or 'dummy',
             base_url=llm_config.get('base_url')
         )
+        
+        # Check if AI wants to call a function
+        if response.choices[0].message.tool_calls:
+            tool_call = response.choices[0].message.tool_calls[0]
+            function_name = tool_call.function.name
+            function_args = json.loads(tool_call.function.arguments)
+            
+            # Execute the function
+            function_result = await execute_function(function_name, function_args, user_id)
+            
+            # Call LLM again with function result
+            response = await acompletion(
+                model=f"{model_prefix}{model_name}",
+                messages=[
+                    {"role": "system", "content": "You are a helpful career assistant for CareerFlow. You help users track their job applications, update statuses, and manage their job search. Use the available functions to access and update the user's actual job data. Be specific and actionable."},
+                    {"role": "user", "content": msg.message},
+                    {"role": "assistant", "content": None, "tool_calls": [{"id": tool_call.id, "type": "function", "function": {"name": function_name, "arguments": tool_call.function.arguments}}]},
+                    {"role": "tool", "tool_call_id": tool_call.id, "name": function_name, "content": json.dumps(function_result)}
+                ],
+                tools=tools,
+                api_key=llm_config.get('api_key') or 'dummy',
+                base_url=llm_config.get('base_url')
+            )
         
         response_text = response.choices[0].message.content
         
@@ -443,6 +534,70 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
     except Exception as e:
         logger.error(f"Chat error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
+
+async def execute_function(function_name: str, arguments: dict, user_id: str):
+    """Execute a function called by the AI"""
+    
+    if function_name == "get_jobs":
+        status_filter = arguments.get("status", "all")
+        query = {"user_id": user_id}
+        if status_filter != "all":
+            query["status"] = status_filter
+        
+        jobs = await db.jobs.find(query, {"_id": 0}).to_list(100)
+        # Return simplified job info
+        return [
+            {
+                "id": job["id"],
+                "title": job["title"],
+                "company": job["company"],
+                "status": job["status"],
+                "location": job.get("location"),
+                "applied_date": job.get("applied_date"),
+                "notes": job.get("notes")
+            }
+            for job in jobs
+        ]
+    
+    elif function_name == "update_job_status":
+        job_id = arguments["job_id"]
+        new_status = arguments["new_status"]
+        
+        result = await db.jobs.update_one(
+            {"id": job_id, "user_id": user_id},
+            {"$set": {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        if result.modified_count > 0:
+            return {"success": True, "message": f"Updated job status to {new_status}"}
+        else:
+            return {"success": False, "message": "Job not found or no changes made"}
+    
+    elif function_name == "add_job":
+        job_data = JobCreate(**arguments)
+        job_obj = Job(user_id=user_id, **job_data.model_dump())
+        await db.jobs.insert_one(serialize_doc(job_obj.model_dump()))
+        
+        return {
+            "success": True,
+            "job_id": job_obj.id,
+            "message": f"Added {job_obj.title} at {job_obj.company}"
+        }
+    
+    elif function_name == "get_dashboard_stats":
+        jobs = await db.jobs.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+        stats = {
+            "total": len(jobs),
+            "applied": len([j for j in jobs if j['status'] == 'applied']),
+            "interview": len([j for j in jobs if j['status'] == 'interview']),
+            "offer": len([j for j in jobs if j['status'] == 'offer']),
+            "rejected": len([j for j in jobs if j['status'] == 'rejected']),
+            "ghosted": len([j for j in jobs if j['status'] == 'ghosted']),
+            "pending": len([j for j in jobs if j['status'] == 'pending'])
+        }
+        return stats
+    
+    return {"error": "Unknown function"}
 
 @api_router.get("/chat/history")
 async def get_chat_history(session_id: Optional[str] = None, user_id: str = Depends(get_current_user)):
