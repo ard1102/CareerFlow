@@ -482,6 +482,12 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
         model_name = llm_config['model']
         if llm_config['provider'] == 'openai_compatible':
             model_prefix = "openai/"
+        elif llm_config['provider'] == 'openrouter':
+            # OpenRouter models already include provider (e.g., openai/gpt-4)
+            model_prefix = "openrouter/"
+            # If user included provider in model name, use as-is, otherwise add prefix
+            if '/' not in model_name:
+                model_name = f"openai/{model_name}"  # Default to openai models
         else:
             model_prefix = f"{llm_config['provider']}/"
         
