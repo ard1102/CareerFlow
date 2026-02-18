@@ -61,11 +61,25 @@ const CompaniesPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this company?')) return;
+  const handleDelete = async (id, companyName) => {
     try {
       await companiesApi.delete(id);
-      toast.success('Company deleted');
+      toast.success('Company moved to trash', {
+        description: companyName,
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            try {
+              const { default: api } = await import('../lib/api');
+              await api.post(`/trash/restore/company/${id}`);
+              toast.success('Company restored');
+              fetchCompanies();
+            } catch (error) {
+              toast.error('Failed to restore');
+            }
+          }
+        }
+      });
       fetchCompanies();
     } catch (error) {
       toast.error('Failed to delete company');
