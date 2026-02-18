@@ -1086,6 +1086,127 @@ async def delete_system(system_id: str, user_id: str = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="System not found")
     return {"message": "System deleted"}
 
+# ============ RESUME BUILDER ROUTES ============
+
+class ResumeGenerateRequest(BaseModel):
+    job_id: Optional[str] = None
+    template: str = "modern"  # modern, classic, minimal
+
+@api_router.post("/resume/generate")
+async def generate_resume(request: ResumeGenerateRequest, user_id: str = Depends(get_current_user)):
+    """Generate a resume from user profile, optionally tailored to a specific job"""
+    
+    # Get user profile
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get job if specified
+    job_context = None
+    if request.job_id:
+        job = await db.jobs.find_one({"id": request.job_id, "user_id": user_id}, {"_id": 0})
+        if job:
+            job_context = {
+                "title": job["title"],
+                "company": job["company"],
+                "description": job.get("description", "")
+            }
+    
+    # Build resume structure
+    resume = {
+        "personal_info": {
+            "name": user.get("name", ""),
+            "email": user.get("email", ""),
+            "location": user.get("location_preference", ""),
+            "years_experience": user.get("years_of_experience", 0)
+        },
+        "summary": user.get("resume_summary", ""),
+        "skills": user.get("skills", []),
+        "projects": user.get("projects", []),
+        "education": user.get("education", []),
+        "work_authorization": user.get("work_authorization", ""),
+        "template": request.template,
+        "generated_for_job": job_context,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    return resume
+
+@api_router.post("/resume/tailor")
+async def tailor_resume_with_ai(request: ResumeGenerateRequest, user_id: str = Depends(get_current_user)):
+    """Use AI to tailor resume for specific job"""
+    
+    # Get user profile
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's LLM config
+    llm_config = await db.llm_configs.find_one({"user_id": user_id})
+    
+    if not llm_config:
+        raise HTTPException(status_code=400, detail="Please configure your LLM settings first")
+    
+    # Get job details
+    job = None
+    if request.job_id:
+        job = await db.jobs.find_one({"id": request.job_id, "user_id": user_id}, {"_id": 0})
+    
+    if not job or not job.get("description"):
+        raise HTTPException(status_code=400, detail="Job description is required for AI tailoring")
+    
+    try:
+        # Build context
+        user_context = f"""
+Name: {user.get('name', '')}
+Experience: {user.get('years_of_experience', 0)} years
+Skills: {', '.join(user.get('skills', []))}
+Summary: {user.get('resume_summary', '')}
+Projects: {chr(10).join(user.get('projects', [])[:5])}
+Education: {chr(10).join(user.get('education', []))}
+"""
+        
+        job_context = f"""
+Job Title: {job['title']}
+Company: {job['company']}
+Description: {job.get('description', '')[:1000]}
+"""
+        
+        # Call AI
+        model_name = llm_config['model']
+        if llm_config['provider'] == 'openai_compatible':
+            model_prefix = "openai/"
+        elif llm_config['provider'] == 'openrouter':
+            model_prefix = "openrouter/"
+            if '/' not in model_name:
+                model_name = f"openai/{model_name}"
+        else:
+            model_prefix = f"{llm_config['provider']}/"
+        
+        response = await acompletion(
+            model=f"{model_prefix}{model_name}",
+            messages=[
+                {"role": "system", "content": "You are a professional resume writer. Provide specific, actionable suggestions to tailor a resume for a job. Be concise and focus on impact."},
+                {"role": "user", "content": f"User Profile:\n{user_context}\n\nTarget Job:\n{job_context}\n\nProvide 5 specific suggestions to tailor this resume for maximum impact. Focus on: 1) Which skills to emphasize 2) How to reframe experience 3) Keywords to include 4) Projects to highlight 5) Summary adjustments"}
+            ],
+            api_key=llm_config.get('api_key') or 'dummy',
+            base_url=llm_config.get('base_url')
+        )
+        
+        suggestions = response.choices[0].message.content
+        
+        return {
+            "suggestions": suggestions,
+            "job": {
+                "title": job["title"],
+                "company": job["company"]
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Resume tailoring error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI tailoring error: {str(e)}")
+
 # ============ ANALYTICS ROUTES ============
 
 @api_router.get("/analytics/dashboard")
