@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { ExternalLink, Trash2, Edit, MapPin, DollarSign } from 'lucide-react';
+import { ExternalLink, Trash2, Edit, MapPin, DollarSign, GraduationCap } from 'lucide-react';
 import { getStatusColor, formatDate } from '../lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { motion } from 'framer-motion';
