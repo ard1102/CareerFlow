@@ -1161,10 +1161,14 @@ async def complete_reminder(reminder_id: str, user_id: str = Depends(get_current
 
 @api_router.delete("/reminders/{reminder_id}")
 async def delete_reminder(reminder_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.reminders.delete_one({"id": reminder_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.reminders.update_one(
+        {"id": reminder_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Reminder not found")
-    return {"message": "Reminder deleted"}
+    return {"message": "Reminder moved to trash", "can_undo": True}
 
 # ============ TARGETS ROUTES ============
 
