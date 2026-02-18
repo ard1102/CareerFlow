@@ -13,6 +13,14 @@ import logging
 from pathlib import Path
 import uuid
 from litellm import acompletion
+from ai_features import (
+    parse_job_description,
+    generate_interview_questions,
+    parse_email_for_job,
+    search_knowledge_by_embedding,
+    extract_learning_path
+)
+from scrapers import scrape_job_from_url, search_jobs
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
