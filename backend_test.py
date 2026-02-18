@@ -607,7 +607,7 @@ class CareerFlowAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🚀 Starting CareerFlow API Tests...")
+        print("🚀 Starting CareerFlow Phase 2 API Tests...")
         print(f"Base URL: {self.base_url}")
         
         # Test in logical order
@@ -616,13 +616,20 @@ class CareerFlowAPITester:
         self.test_jobs_endpoints()
         self.test_analytics_endpoint()
         self.test_llm_config_endpoints()
+        
+        # Test new Phase 2 modules
         self.test_companies_endpoints()
+        self.test_contacts_endpoints()
+        self.test_todos_endpoints()
+        self.test_knowledge_endpoints()
+        self.test_prompts_endpoints()
+        self.test_ai_features_endpoints()
         
         # Print summary
         print(f"\n📋 Test Summary:")
         print(f"Tests Run: {self.tests_run}")
         print(f"Tests Passed: {self.tests_passed}")
-        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"Tests Failed: {self.tests_run - self.tests_failed}")
         print(f"Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
         
         return self.tests_passed == self.tests_run
