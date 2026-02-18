@@ -68,6 +68,25 @@ const AIChatDrawer = ({ open, onClose }) => {
       e.preventDefault();
       handleSend();
     }
+    // Shift+Enter will create new line naturally
+  };
+
+  const handleClearChat = async () => {
+    if (!window.confirm('Clear all chat history? This cannot be undone.')) return;
+    try {
+      await api.delete('/chat/clear', { params: { session_id: sessionId } });
+      setMessages([]);
+      setSessionId(null);
+      toast.success('Chat cleared');
+    } catch (error) {
+      toast.error('Failed to clear chat');
+    }
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setSessionId(null);
+    toast.success('Started new chat');
   };
 
   return (
