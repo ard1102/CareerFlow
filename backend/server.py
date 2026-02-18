@@ -553,6 +553,123 @@ async def get_dashboard_analytics(user_id: str = Depends(get_current_user)):
     
     return stats
 
+# ============ AI-POWERED FEATURES ROUTES ============
+
+class JobDescriptionParse(BaseModel):
+    description: str
+
+class InterviewPrepRequest(BaseModel):
+    job_id: str
+
+class EmailParseRequest(BaseModel):
+    email_content: str
+
+class ScraperRequest(BaseModel):
+    url: str
+
+class SearchJobsRequest(BaseModel):
+    query: str
+    location: Optional[str] = ""
+
+class KnowledgeSearchRequest(BaseModel):
+    query: str
+
+@api_router.post("/ai/parse-job-description")
+async def parse_job_desc(request: JobDescriptionParse, user_id: str = Depends(get_current_user)):
+    """Parse job description to extract skills, requirements, etc."""
+    try:
+        result = parse_job_description(request.description)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/interview-prep")
+async def get_interview_prep(request: InterviewPrepRequest, user_id: str = Depends(get_current_user)):
+    """Generate interview preparation questions for a job"""
+    try:
+        job = await db.jobs.find_one({"id": request.job_id, "user_id": user_id})
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        parsed = parse_job_description(job.get('description', ''))
+        questions = generate_interview_questions(
+            job['title'],
+            job.get('description', ''),
+            parsed['skills']
+        )
+        
+        return {
+            "job_title": job['title'],
+            "company": job['company'],
+            "questions": questions,
+            "skills_to_prepare": parsed['skills'][:10]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/parse-email")
+async def parse_email(request: EmailParseRequest, user_id: str = Depends(get_current_user)):
+    """Parse email content to extract job information"""
+    try:
+        result = parse_email_for_job(request.email_content)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/scrape-job")
+async def scrape_job(request: ScraperRequest, user_id: str = Depends(get_current_user)):
+    """Scrape job details from a URL"""
+    try:
+        result = await scrape_job_from_url(request.url)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/search-jobs")
+async def search_jobs_endpoint(request: SearchJobsRequest, user_id: str = Depends(get_current_user)):
+    """Search for jobs across multiple platforms"""
+    try:
+        results = await search_jobs(request.query, request.location)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/knowledge-search")
+async def knowledge_search(request: KnowledgeSearchRequest, user_id: str = Depends(get_current_user)):
+    """Semantic search in knowledge base"""
+    try:
+        knowledge_items = await db.knowledge.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+        if not knowledge_items:
+            return []
+        
+        results = search_knowledge_by_embedding(request.query, knowledge_items)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/ai/learning-path/{job_id}")
+async def get_learning_path(job_id: str, user_id: str = Depends(get_current_user)):
+    """Get learning path for a specific job"""
+    try:
+        job = await db.jobs.find_one({"id": job_id, "user_id": user_id})
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        parsed = parse_job_description(job.get('description', ''))
+        learning_path = extract_learning_path(parsed['skills'])
+        
+        return {
+            "job_title": job['title'],
+            "company": job['company'],
+            **learning_path
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============ ROOT & MIDDLEWARE ============
 
 @api_router.get("/")
