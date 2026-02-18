@@ -124,19 +124,23 @@ const SettingsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="api_key">API Key {config.provider !== 'ollama' && '*'}</Label>
+              <Label htmlFor="api_key">API Key {config.provider !== 'ollama' && config.provider !== 'openai_compatible' && '*'}</Label>
               <Input
                 id="api_key"
                 data-testid="api-key-input"
                 type="password"
-                placeholder={config.provider === 'ollama' ? 'Not required for Ollama' : 'Enter your API key'}
+                placeholder={config.provider === 'ollama' || config.provider === 'openai_compatible' ? 'Optional (not required for most local servers)' : 'Enter your API key'}
                 value={config.api_key}
                 onChange={(e) => setConfig({ ...config, api_key: e.target.value })}
-                required={config.provider !== 'ollama'}
+                required={config.provider !== 'ollama' && config.provider !== 'openai_compatible'}
                 disabled={config.provider === 'ollama'}
                 className="h-12 rounded-xl"
               />
-              <p className="text-xs text-slate-500">Your API key is stored securely and never shared</p>
+              <p className="text-xs text-slate-500">
+                {config.provider === 'openai_compatible' 
+                  ? 'Most OpenAI-compatible servers don\'t require an API key. Use "dummy" if required by server.'
+                  : 'Your API key is stored securely and never shared'}
+              </p>
             </div>
 
             <div className="space-y-2">
