@@ -141,6 +141,8 @@ class Company(BaseModel):
     employee_count: Optional[str] = None
     research: Optional[str] = None
     user_comments: Optional[str] = None
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ContactCreate(BaseModel):
