@@ -145,22 +145,14 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <AuthPage />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/tools" element={<ProtectedRoute><JobToolsPage /></ProtectedRoute>} />
+      <Route path="/companies" element={<ProtectedRoute><CompaniesPage /></ProtectedRoute>} />
+      <Route path="/contacts" element={<ProtectedRoute><ContactsPage /></ProtectedRoute>} />
+      <Route path="/knowledge" element={<ProtectedRoute><KnowledgePage /></ProtectedRoute>} />
+      <Route path="/todos" element={<ProtectedRoute><TodosPage /></ProtectedRoute>} />
+      <Route path="/prompts" element={<ProtectedRoute><PromptsPage /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} />
     </Routes>
   );
