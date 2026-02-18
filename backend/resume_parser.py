@@ -1,26 +1,72 @@
 """
 Resume parsing utilities
 Extract text from PDF/DOCX and parse with AI
+Uses PyMuPDF (fitz) as primary PDF parser for better extraction
+Falls back to PyPDF2 if PyMuPDF fails
 """
 
-from PyPDF2 import PdfReader
-from docx import Document
 import io
 import re
 from typing import Dict
+import logging
+
+logger = logging.getLogger(__name__)
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text from PDF file"""
+    """Extract text from PDF file using multiple methods for robustness"""
+    text = ""
+    
+    # Method 1: PyMuPDF (fitz) - most reliable for complex PDFs
     try:
+        import fitz  # PyMuPDF
+        pdf_document = fitz.open(stream=file_bytes, filetype="pdf")
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            text += page.get_text() + "\n"
+        pdf_document.close()
+        
+        if text.strip():
+            logger.info(f"PyMuPDF extracted {len(text)} characters")
+            return text.strip()
+    except Exception as e:
+        logger.warning(f"PyMuPDF extraction failed: {e}")
+    
+    # Method 2: PyPDF2 - fallback
+    try:
+        from PyPDF2 import PdfReader
         pdf_file = io.BytesIO(file_bytes)
         reader = PdfReader(pdf_file)
         text = ""
         for page in reader.pages:
-            text += page.extract_text() + "\n"
-        return text.strip()
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        
+        if text.strip():
+            logger.info(f"PyPDF2 extracted {len(text)} characters")
+            return text.strip()
     except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return ""
+        logger.warning(f"PyPDF2 extraction failed: {e}")
+    
+    # Method 3: pdfplumber - last resort for scanned/OCR PDFs
+    try:
+        import pdfplumber
+        pdf_file = io.BytesIO(file_bytes)
+        with pdfplumber.open(pdf_file) as pdf:
+            text = ""
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+        
+        if text.strip():
+            logger.info(f"pdfplumber extracted {len(text)} characters")
+            return text.strip()
+    except Exception as e:
+        logger.warning(f"pdfplumber extraction failed: {e}")
+    
+    logger.error("All PDF extraction methods failed")
+    return ""
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
     """Extract text from DOCX file"""
