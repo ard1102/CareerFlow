@@ -902,57 +902,45 @@ async def execute_function(function_name: str, arguments: dict, user_id: str):
             await db.companies.insert_one(serialize_doc(company_obj.model_dump()))
             company = company_obj.model_dump()
         
-        # Research the company by scraping
-        research_result = {"company_name": company_name, "found_info": {}}
+        # Build research info structure
+        research_info = {
+            "company_name": company_name,
+            "company_id": company["id"],
+            "existing_info": {
+                "about": company.get("about"),
+                "visa_sponsor": company.get("visa_sponsor"),
+                "stem_support": company.get("stem_support"),
+                "employee_count": company.get("employee_count"),
+                "research": company.get("research")
+            },
+            "suggestions": []
+        }
+        
+        # Provide search suggestions
+        search_query = company_name.replace(" ", "+")
+        research_info["suggestions"] = [
+            f"Search Google: https://www.google.com/search?q={search_query}+careers",
+            f"Search for visa sponsorship: https://www.google.com/search?q={search_query}+h1b+visa+sponsorship",
+            f"Check Glassdoor: https://www.glassdoor.com/Search/results.htm?keyword={search_query}",
+            f"Check LinkedIn: https://www.linkedin.com/company/{company_name.lower().replace(' ', '-')}"
+        ]
         
         if company_website:
-            # Scrape company website
-            from scrapers import scrape_generic
-            try:
-                scraped = await scrape_generic(company_website)
-                if scraped.get("description"):
-                    research_result["found_info"]["website_content"] = scraped["description"][:1000]
-            except Exception as e:
-                research_result["found_info"]["website_error"] = str(e)
+            research_info["suggestions"].insert(0, f"Company website: {company_website}")
         
-        # Try to construct company domain and scrape careers/about pages
-        if not company_website:
-            # Try common domain patterns
-            clean_name = company_name.lower().replace(" ", "").replace(".", "").replace(",", "")
-            possible_domains = [
-                f"https://www.{clean_name}.com",
-                f"https://{clean_name}.com"
-            ]
-            
-            from scrapers import scrape_generic
-            for domain in possible_domains:
-                try:
-                    scraped = await scrape_generic(f"{domain}/careers")
-                    if scraped.get("description") and len(scraped["description"]) > 100:
-                        research_result["found_info"]["careers_page"] = scraped["description"][:1000]
-                        research_result["found_info"]["website"] = domain
-                        break
-                except:
-                    continue
-        
-        # Update company with research
-        update_data = {"research": f"Auto-researched on {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"}
-        if research_result["found_info"].get("website_content"):
-            update_data["about"] = research_result["found_info"]["website_content"][:500]
-        if research_result["found_info"].get("website"):
-            update_data["research"] += f"\nWebsite: {research_result['found_info']['website']}"
-        
+        # Update company with research timestamp
         await db.companies.update_one(
             {"id": company["id"], "user_id": user_id},
-            {"$set": update_data}
+            {"$set": {"research": f"Research initiated on {datetime.now(timezone.utc).strftime('%Y-%m-%d')}. Use the links to gather info, then tell me what you found and I'll update the profile."}}
         )
         
         return {
             "success": True,
             "company_id": company["id"],
             "company_name": company_name,
-            "research_summary": research_result["found_info"],
-            "message": f"Researched {company_name}. Found info has been saved to the company profile."
+            "current_info": research_info["existing_info"],
+            "research_links": research_info["suggestions"],
+            "message": f"I've prepared research links for {company_name}. Tell me what you find about their visa sponsorship, STEM-OPT support, company size, etc., and I'll update the company profile."
         }
     
     elif function_name == "update_company":
