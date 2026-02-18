@@ -515,15 +515,19 @@ async def create_contact(contact: ContactCreate, user_id: str = Depends(get_curr
 
 @api_router.get("/contacts", response_model=List[Contact])
 async def get_contacts(user_id: str = Depends(get_current_user)):
-    contacts = await db.contacts.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    contacts = await db.contacts.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).to_list(1000)
     return [deserialize_doc(c) for c in contacts]
 
 @api_router.delete("/contacts/{contact_id}")
 async def delete_contact(contact_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.contacts.delete_one({"id": contact_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.contacts.update_one(
+        {"id": contact_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Contact not found")
-    return {"message": "Contact deleted successfully"}
+    return {"message": "Contact moved to trash", "can_undo": True}
 
 # ============ CHAT ROUTES ============
 
