@@ -154,6 +154,7 @@ const Dashboard = () => {
                   job={job}
                   onDelete={handleJobDeleted}
                   onUpdate={handleJobUpdated}
+                  onInterviewPrep={handleGetInterviewPrep}
                 />
               ))}
             </div>
