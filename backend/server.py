@@ -889,6 +889,91 @@ async def execute_function(function_name: str, arguments: dict, user_id: str):
             for c in contacts
         ]
     
+    elif function_name == "research_company":
+        company_name = arguments["company_name"]
+        company_website = arguments.get("company_website", "")
+        
+        # Try to find or create the company
+        company = await db.companies.find_one({"user_id": user_id, "name": {"$regex": company_name, "$options": "i"}})
+        
+        if not company:
+            # Create new company
+            company_obj = Company(user_id=user_id, name=company_name)
+            await db.companies.insert_one(serialize_doc(company_obj.model_dump()))
+            company = company_obj.model_dump()
+        
+        # Research the company by scraping
+        research_result = {"company_name": company_name, "found_info": {}}
+        
+        if company_website:
+            # Scrape company website
+            from scrapers import scrape_generic
+            try:
+                scraped = await scrape_generic(company_website)
+                if scraped.get("description"):
+                    research_result["found_info"]["website_content"] = scraped["description"][:1000]
+            except Exception as e:
+                research_result["found_info"]["website_error"] = str(e)
+        
+        # Try to construct company domain and scrape careers/about pages
+        if not company_website:
+            # Try common domain patterns
+            clean_name = company_name.lower().replace(" ", "").replace(".", "").replace(",", "")
+            possible_domains = [
+                f"https://www.{clean_name}.com",
+                f"https://{clean_name}.com"
+            ]
+            
+            from scrapers import scrape_generic
+            for domain in possible_domains:
+                try:
+                    scraped = await scrape_generic(f"{domain}/careers")
+                    if scraped.get("description") and len(scraped["description"]) > 100:
+                        research_result["found_info"]["careers_page"] = scraped["description"][:1000]
+                        research_result["found_info"]["website"] = domain
+                        break
+                except:
+                    continue
+        
+        # Update company with research
+        update_data = {"research": f"Auto-researched on {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"}
+        if research_result["found_info"].get("website_content"):
+            update_data["about"] = research_result["found_info"]["website_content"][:500]
+        if research_result["found_info"].get("website"):
+            update_data["research"] += f"\nWebsite: {research_result['found_info']['website']}"
+        
+        await db.companies.update_one(
+            {"id": company["id"], "user_id": user_id},
+            {"$set": update_data}
+        )
+        
+        return {
+            "success": True,
+            "company_id": company["id"],
+            "company_name": company_name,
+            "research_summary": research_result["found_info"],
+            "message": f"Researched {company_name}. Found info has been saved to the company profile."
+        }
+    
+    elif function_name == "update_company":
+        company_id = arguments.pop("company_id")
+        
+        # Filter out None values
+        update_data = {k: v for k, v in arguments.items() if v is not None}
+        
+        if update_data:
+            result = await db.companies.update_one(
+                {"id": company_id, "user_id": user_id},
+                {"$set": update_data}
+            )
+            
+            if result.modified_count > 0:
+                return {"success": True, "message": f"Updated company successfully"}
+            else:
+                return {"success": False, "message": "Company not found or no changes made"}
+        
+        return {"success": False, "message": "No update data provided"}
+    
     return {"error": "Unknown function"}
 
 @api_router.get("/chat/history")
