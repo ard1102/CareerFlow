@@ -465,10 +465,14 @@ async def update_job(job_id: str, job_update: JobCreate, user_id: str = Depends(
 
 @api_router.delete("/jobs/{job_id}")
 async def delete_job(job_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.jobs.delete_one({"id": job_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.jobs.update_one(
+        {"id": job_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Job not found")
-    return {"message": "Job deleted successfully"}
+    return {"message": "Job moved to trash", "can_undo": True}
 
 # ============ COMPANIES ROUTES ============
 
