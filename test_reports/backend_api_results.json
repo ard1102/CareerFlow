@@ -1,0 +1,280 @@
+{
+  "summary": {
+    "total_tests": 15,
+    "passed": 15,
+    "failed": 0,
+    "success_rate": 100.0
+  },
+  "detailed_results": [
+    {
+      "test": "API root endpoint",
+      "success": true,
+      "response": {
+        "message": "CareerFlow API"
+      },
+      "error": null
+    },
+    {
+      "test": "Login with existing test user",
+      "success": true,
+      "response": {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxODYwN2NiMi05ODcwLTQ1ZTUtOTc0MC04ZGY0YjM3YzBhNTUiLCJleHAiOjE3NzM5NzM1MjF9.0NQgIiM90_8nMlXDZ_QFwGWioJh2jeMHN7IxY-BsSEI",
+        "token_type": "bearer"
+      },
+      "error": null
+    },
+    {
+      "test": "Get current user info",
+      "success": true,
+      "response": {
+        "id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "email": "testuser@demo.com",
+        "name": "Test User",
+        "resume_info": null,
+        "visa_status": null,
+        "restrictions": null,
+        "created_at": "2026-02-18T02:23:41.727053Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Register new user",
+      "success": true,
+      "response": {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmU1MWU2Yi1mZGZjLTQzY2ItYWUyZS02NTVlMzA3ZmYwMzgiLCJleHAiOjE3NzM5NzM1MjJ9.Su4OusP_PoJX5R9yvtWvty-G1G8ffFwf_olRl0SQIoY",
+        "token_type": "bearer"
+      },
+      "error": null
+    },
+    {
+      "test": "Get all jobs",
+      "success": true,
+      "response": [
+        {
+          "id": "8b972ce9-7753-4fd1-a1c7-f998d308567d",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Senior Software Engineer",
+          "company": "Tech Corp",
+          "posting_url": "https://example.com/job",
+          "description": null,
+          "pay": "$150k - $200k",
+          "work_auth": "H1B",
+          "location": "San Francisco, CA",
+          "status": "applied",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": "2026-02-18T02:23:48.370662Z",
+          "notes": "Great opportunity!",
+          "created_at": "2026-02-18T02:23:48.370657Z",
+          "updated_at": "2026-02-18T02:23:48.370659Z"
+        },
+        {
+          "id": "423b217d-ed92-4b23-b20b-05c0bd271894",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Frontend Developer",
+          "company": "StartupXYZ",
+          "posting_url": null,
+          "description": null,
+          "pay": "$120k",
+          "work_auth": null,
+          "location": "Remote",
+          "status": "interview",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": null,
+          "notes": null,
+          "created_at": "2026-02-18T02:24:00.694724Z",
+          "updated_at": "2026-02-18T02:24:00.694725Z"
+        },
+        {
+          "id": "f4ca1d4b-7590-4abb-b15d-c6aa2f29f52c",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Full Stack Engineer",
+          "company": "BigTech Inc",
+          "posting_url": null,
+          "description": null,
+          "pay": "$180k",
+          "work_auth": null,
+          "location": "Seattle, WA",
+          "status": "pending",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": null,
+          "notes": null,
+          "created_at": "2026-02-18T02:24:00.893805Z",
+          "updated_at": "2026-02-18T02:24:00.893807Z"
+        },
+        {
+          "id": "5f2ed5fe-324b-4558-8c15-5f14bbbb4267",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Backend Engineer",
+          "company": "CloudServices",
+          "posting_url": null,
+          "description": null,
+          "pay": "$140k",
+          "work_auth": null,
+          "location": "Austin, TX",
+          "status": "rejected",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": null,
+          "notes": null,
+          "created_at": "2026-02-18T02:24:01.016641Z",
+          "updated_at": "2026-02-18T02:24:01.016643Z"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test": "Create new job",
+      "success": true,
+      "response": {
+        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Software Engineer Test",
+        "company": "Test Company Inc",
+        "posting_url": "https://example.com/job",
+        "description": "Test job description",
+        "pay": "$80k - $120k",
+        "work_auth": "No sponsorship",
+        "location": "Remote",
+        "status": "pending",
+        "contacts": [],
+        "resume_submitted": false,
+        "applied_date": null,
+        "notes": "Test job created by automated test",
+        "created_at": "2026-02-18T02:25:22.450716Z",
+        "updated_at": "2026-02-18T02:25:22.450717Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Get specific job",
+      "success": true,
+      "response": {
+        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Software Engineer Test",
+        "company": "Test Company Inc",
+        "posting_url": "https://example.com/job",
+        "description": "Test job description",
+        "pay": "$80k - $120k",
+        "work_auth": "No sponsorship",
+        "location": "Remote",
+        "status": "pending",
+        "contacts": [],
+        "resume_submitted": false,
+        "applied_date": null,
+        "notes": "Test job created by automated test",
+        "created_at": "2026-02-18T02:25:22.450716Z",
+        "updated_at": "2026-02-18T02:25:22.450717Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Update job",
+      "success": true,
+      "response": {
+        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Software Engineer Test",
+        "company": "Test Company Inc",
+        "posting_url": "https://example.com/job",
+        "description": "Test job description",
+        "pay": "$80k - $120k",
+        "work_auth": "No sponsorship",
+        "location": "Remote",
+        "status": "applied",
+        "contacts": [],
+        "resume_submitted": false,
+        "applied_date": "2026-02-18T02:25:22.707337Z",
+        "notes": "Updated by automated test",
+        "created_at": "2026-02-18T02:25:22.450716Z",
+        "updated_at": "2026-02-18T02:25:22.707333Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete job",
+      "success": true,
+      "response": {
+        "message": "Job deleted successfully"
+      },
+      "error": null
+    },
+    {
+      "test": "Get dashboard analytics",
+      "success": true,
+      "response": {
+        "total": 4,
+        "applied": 1,
+        "interview": 1,
+        "offer": 0,
+        "rejected": 1,
+        "ghosted": 0,
+        "pending": 1
+      },
+      "error": null
+    },
+    {
+      "test": "Get LLM config",
+      "success": true,
+      "response": {
+        "id": "de18102a-a5ae-4e50-8055-181e681dbeaa",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "api_key": "test-api-key-placeholder",
+        "base_url": "",
+        "created_at": "2026-02-18T02:25:12.469294+00:00"
+      },
+      "error": null
+    },
+    {
+      "test": "Create/Update LLM config",
+      "success": true,
+      "response": {
+        "id": "7a51ee0d-c728-4aa8-8034-64ac6cb7bf61",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "api_key": "test-api-key-placeholder",
+        "base_url": "",
+        "created_at": "2026-02-18T02:25:23.244520Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Get all companies",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create company",
+      "success": true,
+      "response": {
+        "id": "ad7a5e6f-8903-4928-8f03-e2e17227c086",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "name": "Test Company Ltd",
+        "about": "Test company for automated testing",
+        "stem_support": true,
+        "visa_sponsor": true,
+        "employee_count": "100-500",
+        "research": null,
+        "user_comments": null,
+        "created_at": "2026-02-18T02:25:23.538236Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete company",
+      "success": true,
+      "response": {
+        "message": "Company deleted successfully"
+      },
+      "error": null
+    }
+  ],
+  "timestamp": "2026-02-18T02:25:23.691425"
+}
