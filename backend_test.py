@@ -6,7 +6,7 @@ from typing import Dict, Any
 
 class CareerFlowAPITester:
     def __init__(self):
-        self.base_url = "https://career-compass-756.preview.emergentagent.com"
+        self.base_url = "https://job-funnel.preview.emergentagent.com"
         self.token = None
         self.test_user_id = None
         self.tests_run = 0
