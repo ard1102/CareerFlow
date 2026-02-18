@@ -256,7 +256,9 @@ class CareerFlowAPITester:
             "about": "Test company for automated testing",
             "stem_support": True,
             "visa_sponsor": True,
-            "employee_count": "100-500"
+            "employee_count": "100-500",
+            "research": "Great company culture",
+            "user_comments": "Definitely want to work here"
         }
 
         success, create_response = self.run_test(
@@ -267,13 +269,328 @@ class CareerFlowAPITester:
             data=company_data
         )
 
-        # Cleanup - delete created company
+        # Test get specific company
         if success and 'id' in create_response:
             company_id = create_response['id']
+            self.run_test(
+                "Get specific company",
+                "GET",
+                f"companies/{company_id}",
+                200
+            )
+
+            # Cleanup - delete created company
             self.run_test(
                 "Delete company",
                 "DELETE",
                 f"companies/{company_id}",
+                200
+            )
+
+    def test_contacts_endpoints(self):
+        """Test contacts endpoints"""
+        print("\n👥 Testing Contacts API...")
+        
+        if not self.token:
+            print("❌ No auth token available, skipping contacts tests")
+            return
+
+        # Get contacts
+        self.run_test(
+            "Get all contacts",
+            "GET",
+            "contacts",
+            200
+        )
+
+        # Create contact
+        contact_data = {
+            "name": "John Test",
+            "email": "john.test@example.com",
+            "phone": "+1-555-123-4567",
+            "role": "Hiring Manager",
+            "how_met": "LinkedIn",
+            "notes": "Very friendly recruiter",
+            "last_touch_date": "2024-01-15"
+        }
+
+        success, create_response = self.run_test(
+            "Create contact",
+            "POST",
+            "contacts",
+            200,
+            data=contact_data
+        )
+
+        # Cleanup - delete created contact
+        if success and 'id' in create_response:
+            contact_id = create_response['id']
+            self.run_test(
+                "Delete contact",
+                "DELETE",
+                f"contacts/{contact_id}",
+                200
+            )
+
+    def test_todos_endpoints(self):
+        """Test todos endpoints"""
+        print("\n✅ Testing Todos API...")
+        
+        if not self.token:
+            print("❌ No auth token available, skipping todos tests")
+            return
+
+        # Get todos
+        self.run_test(
+            "Get all todos",
+            "GET",
+            "todos",
+            200
+        )
+
+        # Create todo
+        todo_data = {
+            "title": "Update resume for ML position",
+            "category": "job-search",
+            "due_date": "2024-02-01T10:00:00Z"
+        }
+
+        success, create_response = self.run_test(
+            "Create todo",
+            "POST",
+            "todos",
+            200,
+            data=todo_data
+        )
+
+        created_todo_id = None
+        if success and 'id' in create_response:
+            created_todo_id = create_response['id']
+
+            # Toggle todo completion
+            self.run_test(
+                "Toggle todo completion",
+                "PUT",
+                f"todos/{created_todo_id}",
+                200
+            )
+
+            # Cleanup - delete created todo
+            self.run_test(
+                "Delete todo",
+                "DELETE",
+                f"todos/{created_todo_id}",
+                200
+            )
+
+    def test_knowledge_endpoints(self):
+        """Test knowledge endpoints"""
+        print("\n📚 Testing Knowledge API...")
+        
+        if not self.token:
+            print("❌ No auth token available, skipping knowledge tests")
+            return
+
+        # Get knowledge
+        self.run_test(
+            "Get all knowledge",
+            "GET",
+            "knowledge",
+            200
+        )
+
+        # Create knowledge
+        knowledge_data = {
+            "title": "React Performance Tips",
+            "content": "1. Use React.memo for expensive components\n2. Implement useMemo for expensive calculations\n3. Use useCallback for event handlers\n4. Optimize bundle size with code splitting",
+            "tags": ["react", "performance", "optimization"]
+        }
+
+        success, create_response = self.run_test(
+            "Create knowledge",
+            "POST",
+            "knowledge",
+            200,
+            data=knowledge_data
+        )
+
+        # Cleanup - delete created knowledge
+        if success and 'id' in create_response:
+            knowledge_id = create_response['id']
+            self.run_test(
+                "Delete knowledge",
+                "DELETE",
+                f"knowledge/{knowledge_id}",
+                200
+            )
+
+    def test_prompts_endpoints(self):
+        """Test prompts endpoints"""
+        print("\n📝 Testing Prompts API...")
+        
+        if not self.token:
+            print("❌ No auth token available, skipping prompts tests")
+            return
+
+        # Get prompts
+        self.run_test(
+            "Get all prompts",
+            "GET",
+            "prompts",
+            200
+        )
+
+        # Create prompt
+        prompt_data = {
+            "title": "Cover Letter Template",
+            "content": "Write a compelling cover letter for a [POSITION] role at [COMPANY]. Highlight my experience in [SKILLS] and explain why I'm passionate about [COMPANY_MISSION].",
+            "category": "cover-letter"
+        }
+
+        success, create_response = self.run_test(
+            "Create prompt",
+            "POST",
+            "prompts",
+            200,
+            data=prompt_data
+        )
+
+        # Cleanup - delete created prompt
+        if success and 'id' in create_response:
+            prompt_id = create_response['id']
+            self.run_test(
+                "Delete prompt",
+                "DELETE",
+                f"prompts/{prompt_id}",
+                200
+            )
+
+    def test_ai_features_endpoints(self):
+        """Test AI-powered features endpoints"""
+        print("\n🤖 Testing AI Features API...")
+        
+        if not self.token:
+            print("❌ No auth token available, skipping AI features tests")
+            return
+
+        # Test job description parser
+        job_description = """
+        Software Engineer - Full Stack
+        We are looking for a passionate Full Stack Developer with 3+ years of experience.
+        
+        Requirements:
+        - Strong experience with React, Node.js, and Python
+        - Experience with AWS and Docker
+        - Bachelor's degree in Computer Science
+        - Knowledge of MongoDB and PostgreSQL
+        
+        Benefits:
+        - Health insurance
+        - 401k matching
+        - Remote work flexibility
+        """
+
+        self.run_test(
+            "Parse job description",
+            "POST",
+            "ai/parse-job-description",
+            200,
+            data={"description": job_description}
+        )
+
+        # Test email parser
+        email_content = """
+        Subject: Software Engineer Position at TechCorp
+
+        Hi there,
+
+        I hope this email finds you well. We have an exciting opportunity for a Senior Software Engineer at TechCorp in San Francisco, CA. 
+
+        The position offers a salary range of $120,000 - $150,000 and includes full benefits. You can view the full job description at https://techcorp.com/jobs/senior-engineer-123
+
+        Best regards,
+        Jane Smith
+        Hiring Manager at TechCorp
+        """
+
+        self.run_test(
+            "Parse email for job info",
+            "POST",
+            "ai/parse-email",
+            200,
+            data={"email_content": email_content}
+        )
+
+        # Test job scraper
+        test_url = "https://www.indeed.com/viewjob?jk=test123"
+        self.run_test(
+            "Scrape job from URL",
+            "POST",
+            "ai/scrape-job",
+            200,
+            data={"url": test_url}
+        )
+
+        # Test job search
+        self.run_test(
+            "Search jobs",
+            "POST",
+            "ai/search-jobs",
+            200,
+            data={"query": "Python Developer", "location": "Remote"}
+        )
+
+        # Test knowledge search (semantic search)
+        self.run_test(
+            "Knowledge semantic search",
+            "POST",
+            "ai/knowledge-search",
+            200,
+            data={"query": "React optimization techniques"}
+        )
+
+        # Test interview prep (requires a job first)
+        # Create a job first for interview prep testing
+        job_data = {
+            "title": "Machine Learning Engineer", 
+            "company": "ML Corp",
+            "description": "We need an ML engineer with Python, TensorFlow, and AWS experience",
+            "status": "interview"
+        }
+
+        success, job_response = self.run_test(
+            "Create ML job for interview prep",
+            "POST",
+            "jobs",
+            200,
+            data=job_data
+        )
+
+        if success and 'id' in job_response:
+            job_id = job_response['id']
+            
+            # Test interview prep
+            self.run_test(
+                "Get interview preparation",
+                "POST",
+                "ai/interview-prep",
+                200,
+                data={"job_id": job_id}
+            )
+
+            # Test learning path
+            self.run_test(
+                "Get learning path",
+                "GET",
+                f"ai/learning-path/{job_id}",
+                200
+            )
+
+            # Cleanup job
+            self.run_test(
+                "Delete ML job (cleanup)",
+                "DELETE",
+                f"jobs/{job_id}",
                 200
             )
 
