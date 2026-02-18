@@ -769,6 +769,26 @@ async def delete_prompt(prompt_id: str, user_id: str = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Prompt not found")
     return {"message": "Prompt deleted"}
 
+# ============ JOB PORTALS ROUTES ============
+
+@api_router.post("/portals", response_model=JobPortal)
+async def create_portal(portal: JobPortalCreate, user_id: str = Depends(get_current_user)):
+    portal_obj = JobPortal(user_id=user_id, **portal.model_dump())
+    await db.portals.insert_one(serialize_doc(portal_obj.model_dump()))
+    return portal_obj
+
+@api_router.get("/portals", response_model=List[JobPortal])
+async def get_portals(user_id: str = Depends(get_current_user)):
+    portals = await db.portals.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    return [deserialize_doc(p) for p in portals]
+
+@api_router.delete("/portals/{portal_id}")
+async def delete_portal(portal_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.portals.delete_one({"id": portal_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Portal not found")
+    return {"message": "Portal deleted"}
+
 # ============ ANALYTICS ROUTES ============
 
 @api_router.get("/analytics/dashboard")
