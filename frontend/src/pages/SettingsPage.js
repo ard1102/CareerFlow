@@ -122,13 +122,21 @@ const SettingsPage = () => {
               <Input
                 id="model"
                 data-testid="model-input"
-                placeholder="e.g., gpt-4, claude-3, llama2, gemini-pro"
+                placeholder={
+                  config.provider === 'openrouter'
+                    ? 'e.g., openai/gpt-4, anthropic/claude-3-opus, meta-llama/llama-2-70b'
+                    : 'e.g., gpt-4, claude-3, llama2, gemini-pro'
+                }
                 value={config.model}
                 onChange={(e) => setConfig({ ...config, model: e.target.value })}
                 required
                 className="h-12 rounded-xl"
               />
-              <p className="text-xs text-slate-500">Enter the specific model name (e.g., gpt-4, claude-3-sonnet-20240229, llama2)</p>
+              <p className="text-xs text-slate-500">
+                {config.provider === 'openrouter'
+                  ? 'OpenRouter uses format: provider/model (e.g., openai/gpt-4). See models at openrouter.ai/models'
+                  : 'Enter the specific model name (e.g., gpt-4, claude-3-sonnet-20240229, llama2)'}
+              </p>
             </div>
 
             <div className="space-y-2">
