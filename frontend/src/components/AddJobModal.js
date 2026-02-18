@@ -119,15 +119,29 @@ const AddJobModal = ({ open, onClose, onJobAdded }) => {
 
           <div className="space-y-2">
             <Label htmlFor="posting_url">Job Posting URL</Label>
-            <Input
-              id="posting_url"
-              data-testid="job-url-input"
-              type="url"
-              placeholder="https://..."
-              value={formData.posting_url}
-              onChange={(e) => handleChange('posting_url', e.target.value)}
-              className="h-12 rounded-xl"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="posting_url"
+                data-testid="job-url-input"
+                type="url"
+                placeholder="https://..."
+                value={formData.posting_url}
+                onChange={(e) => handleChange('posting_url', e.target.value)}
+                className="h-12 rounded-xl flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAutoParse}
+                disabled={parsing || !formData.posting_url}
+                className="h-12 px-4 rounded-xl"
+                title="Auto-parse job details from URL"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                {parsing ? 'Parsing...' : 'Auto-Parse'}
+              </Button>
+            </div>
+            <p className="text-xs text-slate-500">Paste job URL and click Auto-Parse to extract details automatically</p>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
