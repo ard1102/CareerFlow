@@ -8,12 +8,52 @@ from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
 import asyncio
 from urllib.parse import urlparse, parse_qs
+import socket
+import ipaddress
+
+async def validate_url(url: str) -> bool:
+    """Validate that URL is safe to scrape (SSRF protection)"""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ('http', 'https'):
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        # Run DNS resolution in executor to avoid blocking
+        loop = asyncio.get_running_loop()
+        try:
+            # Use getaddrinfo to handle both IPv4 and IPv6
+            addr_info = await loop.run_in_executor(None, socket.getaddrinfo, hostname, None)
+
+            for family, _, _, _, sockaddr in addr_info:
+                ip = sockaddr[0]
+                ip_obj = ipaddress.ip_address(ip)
+                if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+                    return False
+        except socket.gaierror:
+            return False # Cannot resolve
+
+        return True
+    except Exception:
+        return False
 
 async def scrape_job_from_url(url: str) -> Dict:
     """
     Scrape job details from a URL
     Detects the job portal and uses appropriate scraper
     """
+    # SSRF Protection
+    if not await validate_url(url):
+         return {
+             "error": "Invalid URL",
+             "description": "Security check failed: URL points to a restricted network resource or is invalid.",
+             "title": "Error",
+             "company": None
+         }
+
     domain = urlparse(url).netloc.lower()
     
     if 'linkedin.com' in domain:
