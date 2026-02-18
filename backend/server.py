@@ -167,6 +167,8 @@ class Contact(BaseModel):
     how_met: Optional[str] = None
     notes: Optional[str] = None
     last_touch_date: Optional[datetime] = None
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ChatMessageCreate(BaseModel):
