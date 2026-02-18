@@ -484,7 +484,7 @@ async def create_company(company: CompanyCreate, user_id: str = Depends(get_curr
 
 @api_router.get("/companies", response_model=List[Company])
 async def get_companies(user_id: str = Depends(get_current_user)):
-    companies = await db.companies.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    companies = await db.companies.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).to_list(1000)
     return [deserialize_doc(c) for c in companies]
 
 @api_router.get("/companies/{company_id}", response_model=Company)
