@@ -60,6 +60,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleGetInterviewPrep = async (jobId) => {
+    try {
+      const response = await api.post('/ai/interview-prep', { job_id: jobId });
+      const questions = response.data.questions.slice(0, 5).map(q => q.question || q).join('\n\n');
+      alert(`Interview Prep for ${response.data.job_title}:\n\n${questions}\n\nSkills to prepare: ${response.data.skills_to_prepare.join(', ')}`);
+    } catch (error) {
+      toast.error('Failed to get interview prep');
+    }
+  };
+
   const statusCards = [
     { label: 'Pending', count: stats.pending || 0, icon: Clock, color: 'from-slate-500 to-slate-600', bg: 'bg-slate-50' },
     { label: 'Applied', count: stats.applied || 0, icon: Briefcase, color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
