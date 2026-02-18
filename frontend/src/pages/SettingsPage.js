@@ -80,6 +80,13 @@ const SettingsPage = () => {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8"
         >
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-4 mb-6 flex gap-3">
+            <Zap className="w-6 h-6 text-violet-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-violet-900">
+              <strong>NEW: OpenAI-Compatible Support!</strong> You can now use any OpenAI-compatible API including LM Studio, vLLM, Ollama (with OpenAI mode), text-generation-webui, Groq, Together AI, and more. Just select "OpenAI-Compatible" as provider and enter your server's base URL.
+            </div>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-semibold font-heading mb-1">LLM Configuration</h2>
