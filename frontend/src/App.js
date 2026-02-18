@@ -29,6 +29,9 @@ const Sidebar = () => {
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'AI Tools', path: '/tools', icon: Wand2 },
+    { name: 'Resume', path: '/resume', icon: FileDown },
+    { name: 'Reminders', path: '/reminders', icon: Bell },
+    { name: 'Targets', path: '/targets', icon: Target },
     { name: 'Companies', path: '/companies', icon: Building2 },
     { name: 'Contacts', path: '/contacts', icon: Users },
     { name: 'Portals', path: '/portals', icon: Globe },
