@@ -5,14 +5,16 @@ import { Toaster } from './components/ui/sonner';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
 import CompaniesPage from './pages/CompaniesPage';
 import ContactsPage from './pages/ContactsPage';
 import KnowledgePage from './pages/KnowledgePage';
 import TodosPage from './pages/TodosPage';
 import PromptsPage from './pages/PromptsPage';
 import JobToolsPage from './pages/JobToolsPage';
+import JobPortalsPage from './pages/JobPortalsPage';
 import AIChatDrawer from './components/AIChatDrawer';
-import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2 } from 'lucide-react';
+import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2, User, Globe } from 'lucide-react';
 import { Button } from './components/ui/button';
 import './App.css';
 
