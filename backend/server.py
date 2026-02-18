@@ -64,6 +64,27 @@ class User(BaseModel):
     visa_status: Optional[str] = None
     restrictions: Optional[List[str]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # New profile fields
+    resume_summary: Optional[str] = None
+    skills: Optional[List[str]] = []
+    projects: Optional[List[str]] = []
+    education: Optional[List[str]] = []
+    work_authorization: Optional[str] = None
+    previous_companies: Optional[List[str]] = []
+    location_preference: Optional[str] = None
+    years_of_experience: Optional[int] = None
+
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    resume_summary: Optional[str] = None
+    skills: Optional[List[str]] = None
+    projects: Optional[List[str]] = None
+    education: Optional[List[str]] = None
+    work_authorization: Optional[str] = None
+    visa_status: Optional[str] = None
+    previous_companies: Optional[List[str]] = None
+    location_preference: Optional[str] = None
+    years_of_experience: Optional[int] = None
 
 class Token(BaseModel):
     access_token: str
