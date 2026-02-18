@@ -257,6 +257,60 @@ class JobPortal(BaseModel):
     last_used: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class ReminderCreate(BaseModel):
+    job_id: Optional[str] = None
+    reminder_date: datetime
+    message: str
+    reminder_type: str = "follow_up"  # follow_up, interview, deadline, custom
+
+class Reminder(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    job_id: Optional[str] = None
+    reminder_date: datetime
+    message: str
+    reminder_type: str = "follow_up"
+    completed: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TargetCreate(BaseModel):
+    title: str
+    target_type: str  # applications, interviews, offers, networking
+    goal_value: int
+    current_value: int = 0
+    deadline: Optional[datetime] = None
+    period: str = "weekly"  # daily, weekly, monthly, quarterly
+
+class Target(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    target_type: str
+    goal_value: int
+    current_value: int = 0
+    deadline: Optional[datetime] = None
+    period: str = "weekly"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SystemCreate(BaseModel):
+    name: str
+    description: str
+    frequency: str  # daily, weekly, biweekly, monthly
+    tasks: List[str]
+
+class System(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    description: str
+    frequency: str
+    tasks: List[str]
+    last_executed: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============ HELPER FUNCTIONS ============
 
 def hash_password(password: str) -> str:
