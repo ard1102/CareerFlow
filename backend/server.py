@@ -215,6 +215,8 @@ class Todo(BaseModel):
     completed: bool = False
     category: Optional[str] = "general"
     due_date: Optional[datetime] = None
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class KnowledgeCreate(BaseModel):
