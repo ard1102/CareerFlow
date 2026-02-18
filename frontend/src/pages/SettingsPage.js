@@ -220,6 +220,10 @@ const SettingsPage = () => {
           <ul className="space-y-2 text-sm text-slate-700">
             <li className="flex items-start gap-2">
               <span className="text-orange-500 font-bold mt-0.5">•</span>
+              <span><strong>OpenRouter:</strong> Access 100+ models with one API key! Use model format "provider/model" like "openai/gpt-4" or "anthropic/claude-3-opus". Get key from openrouter.ai</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 font-bold mt-0.5">•</span>
               <span><strong>OpenAI:</strong> Use model "gpt-4" or "gpt-3.5-turbo". Get API key from platform.openai.com</span>
             </li>
             <li className="flex items-start gap-2">
