@@ -1071,15 +1071,19 @@ async def create_knowledge(knowledge: KnowledgeCreate, user_id: str = Depends(ge
 
 @api_router.get("/knowledge", response_model=List[Knowledge])
 async def get_knowledge(user_id: str = Depends(get_current_user)):
-    knowledge = await db.knowledge.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    knowledge = await db.knowledge.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).to_list(1000)
     return [deserialize_doc(k) for k in knowledge]
 
 @api_router.delete("/knowledge/{knowledge_id}")
 async def delete_knowledge(knowledge_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.knowledge.delete_one({"id": knowledge_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.knowledge.update_one(
+        {"id": knowledge_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Knowledge not found")
-    return {"message": "Knowledge deleted"}
+    return {"message": "Knowledge moved to trash", "can_undo": True}
 
 # ============ PROMPTS ROUTES ============
 
