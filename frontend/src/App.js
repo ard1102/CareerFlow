@@ -169,6 +169,7 @@ const AppRoutes = () => {
       <Route path="/knowledge" element={<ProtectedRoute><KnowledgePage /></ProtectedRoute>} />
       <Route path="/todos" element={<ProtectedRoute><TodosPage /></ProtectedRoute>} />
       <Route path="/prompts" element={<ProtectedRoute><PromptsPage /></ProtectedRoute>} />
+      <Route path="/trash" element={<ProtectedRoute><TrashPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} />
     </Routes>
