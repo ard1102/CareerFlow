@@ -1135,7 +1135,7 @@ async def create_reminder(reminder: ReminderCreate, user_id: str = Depends(get_c
 
 @api_router.get("/reminders", response_model=List[Reminder])
 async def get_reminders(user_id: str = Depends(get_current_user)):
-    reminders = await db.reminders.find({"user_id": user_id}, {"_id": 0}).sort("reminder_date", 1).to_list(1000)
+    reminders = await db.reminders.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).sort("reminder_date", 1).to_list(1000)
     return [deserialize_doc(r) for r in reminders]
 
 @api_router.get("/reminders/upcoming", response_model=List[Reminder])
@@ -1145,6 +1145,7 @@ async def get_upcoming_reminders(user_id: str = Depends(get_current_user)):
     reminders = await db.reminders.find({
         "user_id": user_id,
         "completed": False,
+        "is_deleted": {"$ne": True},
         "reminder_date": {"$lte": future_date.isoformat()}
     }, {"_id": 0}).sort("reminder_date", 1).to_list(100)
     return [deserialize_doc(r) for r in reminders]
