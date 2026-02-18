@@ -687,7 +687,6 @@ async def execute_function(function_name: str, arguments: dict, user_id: str):
             query["status"] = status_filter
         
         jobs = await db.jobs.find(query, {"_id": 0}).to_list(100)
-        # Return simplified job info
         return [
             {
                 "id": job["id"],
@@ -738,6 +737,67 @@ async def execute_function(function_name: str, arguments: dict, user_id: str):
             "pending": len([j for j in jobs if j['status'] == 'pending'])
         }
         return stats
+    
+    elif function_name == "create_company":
+        company_data = CompanyCreate(**arguments)
+        company_obj = Company(user_id=user_id, **company_data.model_dump())
+        await db.companies.insert_one(serialize_doc(company_obj.model_dump()))
+        return {"success": True, "company_id": company_obj.id, "message": f"Added company: {company_obj.name}"}
+    
+    elif function_name == "create_contact":
+        # If company name is provided, try to find company_id
+        company_name = arguments.pop("company", None)
+        company_id = None
+        if company_name:
+            company = await db.companies.find_one({"user_id": user_id, "name": company_name})
+            if company:
+                company_id = company["id"]
+        
+        contact_data = ContactCreate(**arguments, company_id=company_id)
+        contact_obj = Contact(user_id=user_id, **contact_data.model_dump())
+        await db.contacts.insert_one(serialize_doc(contact_obj.model_dump()))
+        return {"success": True, "contact_id": contact_obj.id, "message": f"Added contact: {contact_obj.name}"}
+    
+    elif function_name == "create_knowledge":
+        tags = arguments.get("tags", [])
+        knowledge_data = KnowledgeCreate(
+            title=arguments["title"],
+            content=arguments["content"],
+            tags=tags
+        )
+        knowledge_obj = Knowledge(user_id=user_id, **knowledge_data.model_dump())
+        await db.knowledge.insert_one(serialize_doc(knowledge_obj.model_dump()))
+        return {"success": True, "knowledge_id": knowledge_obj.id, "message": f"Saved to knowledge base: {knowledge_obj.title}"}
+    
+    elif function_name == "parse_job_description":
+        from ai_features import parse_job_description as parse_desc
+        description = arguments["description"]
+        result = parse_desc(description)
+        return result
+    
+    elif function_name == "get_companies":
+        companies = await db.companies.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        return [
+            {
+                "id": c["id"],
+                "name": c["name"],
+                "visa_sponsor": c.get("visa_sponsor", False),
+                "stem_support": c.get("stem_support", False)
+            }
+            for c in companies
+        ]
+    
+    elif function_name == "get_contacts":
+        contacts = await db.contacts.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        return [
+            {
+                "id": c["id"],
+                "name": c["name"],
+                "email": c.get("email"),
+                "role": c.get("role")
+            }
+            for c in contacts
+        ]
     
     return {"error": "Unknown function"}
 
