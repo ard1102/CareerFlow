@@ -71,8 +71,8 @@ const AIChatDrawer = ({ open, onClose }) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
+    <Sheet open={open} onOpenChange={onClose} modal={true}>
+      <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col z-50">
         <SheetHeader className="p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-rose-50">
           <SheetTitle className="text-2xl font-bold font-heading flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center">
