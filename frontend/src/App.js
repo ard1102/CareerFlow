@@ -16,8 +16,9 @@ import JobPortalsPage from './pages/JobPortalsPage';
 import TargetsPage from './pages/TargetsPage';
 import RemindersPage from './pages/RemindersPage';
 import ResumeBuilderPage from './pages/ResumeBuilderPage';
+import TrashPage from './pages/TrashPage';
 import AIChatDrawer from './components/AIChatDrawer';
-import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2, User, Globe, Target, Bell, FileDown } from 'lucide-react';
+import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2, User, Globe, Target, Bell, FileDown, Trash2 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import './App.css';
 
