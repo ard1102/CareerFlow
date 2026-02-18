@@ -28,9 +28,11 @@ const Sidebar = () => {
     { name: 'AI Tools', path: '/tools', icon: Wand2 },
     { name: 'Companies', path: '/companies', icon: Building2 },
     { name: 'Contacts', path: '/contacts', icon: Users },
+    { name: 'Portals', path: '/portals', icon: Globe },
     { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
     { name: 'To-Do', path: '/todos', icon: CheckSquare },
     { name: 'Prompts', path: '/prompts', icon: FileText },
+    { name: 'Profile', path: '/profile', icon: User },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
