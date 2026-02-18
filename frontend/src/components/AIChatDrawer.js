@@ -141,7 +141,17 @@ const AIChatDrawer = ({ open, onClose }) => {
                 <Bot className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-lg font-semibold mb-2">How can I help you today?</h3>
-              <p className="text-sm text-slate-600">I can help you manage jobs, analyze descriptions, or give career advice</p>
+              <div className="text-sm text-slate-600 space-y-1 max-w-md mx-auto">
+                <p>I can help you with:</p>
+                <ul className="list-disc list-inside text-left mt-2">
+                  <li>View your pending, applied, or interview jobs</li>
+                  <li>Update job application statuses</li>
+                  <li>Add new job applications</li>
+                  <li>Get statistics on your applications</li>
+                  <li>Answer questions about your job search</li>
+                </ul>
+                <p className="mt-3 text-xs text-slate-500">Try asking: "What are my pending applications?"</p>
+              </div>
             </div>
           )}
 
