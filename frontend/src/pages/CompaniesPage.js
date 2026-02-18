@@ -141,8 +141,9 @@ const CompaniesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(company.id)}
+                        onClick={() => handleDelete(company.id, company.name)}
                         className="rounded-full text-rose-600 hover:bg-rose-50"
+                        data-testid={`delete-company-${company.id}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
