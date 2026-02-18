@@ -665,6 +665,41 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
                     "description": "Get list of contacts in your network.",
                     "parameters": {"type": "object", "properties": {}}
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "research_company",
+                    "description": "Research a company by scraping their website to get information about what they do, their culture, STEM-OPT support, visa sponsorship, etc. Updates the company profile with the researched info.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "company_name": {"type": "string", "description": "Name of the company to research"},
+                            "company_website": {"type": "string", "description": "Company website URL (e.g., https://company.com). Optional if you don't know it."}
+                        },
+                        "required": ["company_name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_company",
+                    "description": "Update an existing company's details like about, visa sponsorship status, STEM-OPT support, etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "company_id": {"type": "string", "description": "ID of the company to update"},
+                            "about": {"type": "string", "description": "About the company"},
+                            "visa_sponsor": {"type": "boolean", "description": "Does company sponsor visas"},
+                            "stem_support": {"type": "boolean", "description": "STEM-OPT support"},
+                            "employee_count": {"type": "string", "description": "Approximate employee count"},
+                            "research": {"type": "string", "description": "Research notes about the company"},
+                            "user_comments": {"type": "string", "description": "User's personal notes"}
+                        },
+                        "required": ["company_id"]
+                    }
+                }
             }
         ]
         
