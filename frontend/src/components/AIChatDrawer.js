@@ -200,14 +200,15 @@ const AIChatDrawer = ({ open, onClose }) => {
 
         <div className="p-4 border-t border-slate-200 bg-white">
           <div className="flex gap-2">
-            <Input
+            <Textarea
               data-testid="chat-input"
-              placeholder="Type your message..."
+              placeholder="Type your message... (Shift+Enter for new line)"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               disabled={loading || !hasConfig}
-              className="flex-1 h-12 rounded-xl"
+              className="flex-1 min-h-[48px] max-h-[120px] rounded-xl resize-none"
+              rows={1}
             />
             <Button
               data-testid="chat-send-button"
@@ -218,6 +219,7 @@ const AIChatDrawer = ({ open, onClose }) => {
               <Send className="w-5 h-5" />
             </Button>
           </div>
+          <p className="text-xs text-slate-500 mt-2">Tip: Use Shift+Enter for new line, Enter to send</p>
         </div>
       </SheetContent>
     </Sheet>
