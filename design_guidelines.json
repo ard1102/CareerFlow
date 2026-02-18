@@ -1,0 +1,112 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "CareerFlow - The Career Athlete",
+      "persona": "E1 Anti-AI Designer",
+      "vibe": "Energetic, Motivating, Proactive, Organized",
+      "theme_strategy": "Light Mode Default (High Energy Accents)",
+      "core_philosophy": "Job hunting is a sport. The interface is your gym and scoreboard. It must feel empowering, not administrative."
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Outfit, sans-serif",
+        "body": "Plus Jakarta Sans, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold tracking-tight",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed text-slate-600",
+        "caption": "text-sm font-medium text-slate-400 uppercase tracking-wider"
+      },
+      "rules": [
+        "Never use Inter for headings.",
+        "Use tight tracking for all headings (-0.02em).",
+        "Use relaxed leading for body text."
+      ]
+    },
+    "colors": {
+      "palette": {
+        "background": "bg-slate-50",
+        "surface": "bg-white",
+        "primary": "bg-orange-600 hover:bg-orange-700 text-white",
+        "secondary": "bg-indigo-600 hover:bg-indigo-700 text-white",
+        "accent_success": "text-emerald-600 bg-emerald-50 border-emerald-200",
+        "accent_warning": "text-amber-600 bg-amber-50 border-amber-200",
+        "accent_error": "text-rose-600 bg-rose-50 border-rose-200",
+        "accent_info": "text-sky-600 bg-sky-50 border-sky-200"
+      },
+      "gradients": {
+        "hero_glow": "bg-gradient-to-r from-orange-400/20 via-rose-400/20 to-indigo-400/20 blur-3xl",
+        "card_hover": "hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-orange-500/30 transition-all duration-300"
+      },
+      "forbidden": [
+        "#7351B7 (Generic AI Purple)",
+        "#1B93A4 (Boring Teal)",
+        "Gradients on text for body copy"
+      ]
+    },
+    "components": {
+      "buttons": {
+        "primary": "rounded-full px-8 py-6 font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all active:scale-95",
+        "secondary": "rounded-full px-6 py-6 font-medium bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 shadow-sm"
+      },
+      "cards": {
+        "base": "bg-white border border-slate-100 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow",
+        "interactive": "group relative overflow-hidden bg-white border border-slate-200 rounded-3xl p-8 hover:-translate-y-1 transition-all duration-300"
+      },
+      "inputs": {
+        "base": "h-12 rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+      },
+      "status_badges": {
+        "applied": "bg-blue-50 text-blue-700 border-blue-200",
+        "interview": "bg-purple-50 text-purple-700 border-purple-200",
+        "offer": "bg-emerald-50 text-emerald-700 border-emerald-200",
+        "rejected": "bg-slate-100 text-slate-600 border-slate-200"
+      }
+    },
+    "layout_strategies": {
+      "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6 p-6 auto-rows-[minmax(180px,auto)]",
+      "bento_hero": "col-span-1 md:col-span-8 row-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden",
+      "bento_sidebar": "col-span-1 md:col-span-4 row-span-2 bg-indigo-900 text-white rounded-3xl p-8 relative overflow-hidden",
+      "spacing": "Use p-6 or p-8 for internal card padding. Use gap-6 or gap-8 for grids."
+    },
+    "motion": {
+      "transitions": "transition-all duration-300 ease-out",
+      "hover_lift": "hover:-translate-y-1 hover:shadow-lg",
+      "micro_interactions": "active:scale-95 duration-100"
+    },
+    "libraries": {
+      "icons": "lucide-react (Default), @phosphor-icons/react (For feature icons)",
+      "charts": "recharts (via Shadcn Charts)",
+      "toast": "sonner",
+      "animation": "framer-motion"
+    },
+    "universal_guidelines": [
+      "Avoid 'AI Slop': No generic centered layouts.",
+      "Dark colors look good when used independently without gradients.",
+      "Use glass-morphism effects with backdrop filters (12-24px blur) for sticky headers.",
+      "Never use generic AI emojis (🤖, 🧠) as icons.",
+      "Every interaction needs micro-animations.",
+      "Use 2-3x more spacing than feels comfortable."
+    ]
+  },
+  "assets": {
+    "image_urls": {
+      "hero_motivation": "https://images.unsplash.com/photo-1758876201824-3a4de35543dd?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "team_collaboration": "https://images.pexels.com/photos/5256688/pexels-photo-5256688.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "workspace_clean": "https://images.pexels.com/photos/19238352/pexels-photo-19238352.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    },
+    "logo_placeholder": "Use a simple geometric shape (e.g., a rising arrow or spark) made with pure CSS or SVG. Do not use text as logo."
+  },
+  "implementation_steps": [
+    "Step 1: Install fonts (Outfit, Plus Jakarta Sans) via Google Fonts in index.html/css.",
+    "Step 2: Update tailwind.config.js with the new color palette (Orange/Indigo/Slate).",
+    "Step 3: Create the 'DashboardLayout' using the Bento Grid strategy.",
+    "Step 4: Build the 'JobCard' component with status badges and hover effects.",
+    "Step 5: Implement the 'AIChat' drawer with a glassmorphism overlay.",
+    "Step 6: Apply the 'Career Athlete' theme to all form elements (Inputs, Selects)."
+  ]
+}
