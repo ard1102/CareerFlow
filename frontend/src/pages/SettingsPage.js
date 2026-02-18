@@ -208,7 +208,19 @@ const SettingsPage = () => {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-orange-500 font-bold mt-0.5">•</span>
-              <span><strong>Ollama:</strong> Install locally, use model name like "llama2" and base_url "http://localhost:11434"</span>
+              <span><strong>Ollama:</strong> Install locally, use model name like "llama2" or "mistral" and base_url "http://localhost:11434"</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 font-bold mt-0.5">•</span>
+              <span><strong>LM Studio:</strong> Select "OpenAI-Compatible", use any model name loaded in LM Studio, base_url "http://localhost:1234/v1"</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 font-bold mt-0.5">•</span>
+              <span><strong>vLLM / text-generation-webui:</strong> Select "OpenAI-Compatible", model name from server, base_url with /v1 endpoint</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 font-bold mt-0.5">•</span>
+              <span><strong>Any OpenAI-compatible API:</strong> Works with Groq, Together AI, Perplexity, LocalAI, and more!</span>
             </li>
           </ul>
         </motion.div>
