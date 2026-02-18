@@ -6,7 +6,7 @@ import { getStatusColor, formatDate } from '../lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { motion } from 'framer-motion';
 
-const JobCard = ({ job, onDelete, onUpdate }) => {
+const JobCard = ({ job, onDelete, onUpdate, onInterviewPrep }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleStatusChange = async (newStatus) => {
