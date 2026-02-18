@@ -6,10 +6,13 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { jobsApi } from '../lib/api';
+import api from '../lib/api';
 import { toast } from 'sonner';
+import { Wand2 } from 'lucide-react';
 
 const AddJobModal = ({ open, onClose, onJobAdded }) => {
   const [loading, setLoading] = useState(false);
+  const [parsing, setParsing] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -24,6 +27,32 @@ const AddJobModal = ({ open, onClose, onJobAdded }) => {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAutoParse = async () => {
+    if (!formData.posting_url) {
+      toast.error('Please enter a job URL first');
+      return;
+    }
+
+    setParsing(true);
+    try {
+      // Try scraping
+      const scrapeResponse = await api.post('/ai/scrape-job', { url: formData.posting_url });
+      
+      // Update form with scraped data
+      if (scrapeResponse.data.title) setFormData(prev => ({ ...prev, title: scrapeResponse.data.title }));
+      if (scrapeResponse.data.company) setFormData(prev => ({ ...prev, company: scrapeResponse.data.company }));
+      if (scrapeResponse.data.location) setFormData(prev => ({ ...prev, location: scrapeResponse.data.location }));
+      if (scrapeResponse.data.pay) setFormData(prev => ({ ...prev, pay: scrapeResponse.data.pay }));
+      if (scrapeResponse.data.description) setFormData(prev => ({ ...prev, description: scrapeResponse.data.description }));
+      
+      toast.success('Job details parsed successfully!');
+    } catch (error) {
+      toast.error('Failed to parse job. You can still add manually.');
+    } finally {
+      setParsing(false);
+    }
   };
 
   const handleSubmit = async (e) => {
