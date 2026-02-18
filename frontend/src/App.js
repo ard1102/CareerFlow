@@ -13,8 +13,11 @@ import TodosPage from './pages/TodosPage';
 import PromptsPage from './pages/PromptsPage';
 import JobToolsPage from './pages/JobToolsPage';
 import JobPortalsPage from './pages/JobPortalsPage';
+import TargetsPage from './pages/TargetsPage';
+import RemindersPage from './pages/RemindersPage';
+import ResumeBuilderPage from './pages/ResumeBuilderPage';
 import AIChatDrawer from './components/AIChatDrawer';
-import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2, User, Globe } from 'lucide-react';
+import { Briefcase, LayoutDashboard, Settings, LogOut, MessageCircle, Building2, Users, BookOpen, CheckSquare, FileText, Wand2, User, Globe, Target, Bell, FileDown } from 'lucide-react';
 import { Button } from './components/ui/button';
 import './App.css';
 
