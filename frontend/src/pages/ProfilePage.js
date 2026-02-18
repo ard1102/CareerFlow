@@ -117,13 +117,46 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold font-heading tracking-tight">My Profile</h1>
+                <p className="text-slate-600 text-lg">Manage your resume, skills, and preferences</p>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold font-heading tracking-tight">My Profile</h1>
+            <div>
+              <input
+                type="file"
+                id="resume-upload"
+                accept=".pdf,.docx"
+                onChange={handleResumeUpload}
+                className="hidden"
+              />
+              <Button
+                asChild
+                disabled={uploading}
+                className="h-12 px-6 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 cursor-pointer"
+              >
+                <label htmlFor="resume-upload" className="cursor-pointer flex items-center">
+                  {uploading ? (
+                    <>
+                      <FileText className="w-5 h-5 mr-2 animate-pulse" />
+                      Parsing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5 mr-2" />
+                      Upload Resume
+                    </>
+                  )}
+                </label>
+              </Button>
+            </div>
           </div>
-          <p className="text-slate-600 text-lg">Manage your resume, skills, and preferences</p>
+          <p className="text-sm text-slate-500 ml-16">Upload your resume (PDF or DOCX) to auto-fill your profile with AI</p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
