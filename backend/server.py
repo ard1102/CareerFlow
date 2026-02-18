@@ -283,6 +283,8 @@ class Reminder(BaseModel):
     message: str
     reminder_type: str = "follow_up"
     completed: bool = False
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TargetCreate(BaseModel):
