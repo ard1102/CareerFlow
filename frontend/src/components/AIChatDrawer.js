@@ -95,13 +95,37 @@ const AIChatDrawer = ({ open, onClose }) => {
     <Sheet open={open} onOpenChange={onClose} modal={true}>
       <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col z-50">
         <SheetHeader className="p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-rose-50">
-          <SheetTitle className="text-2xl font-bold font-heading flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center">
-              <Bot className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <SheetTitle className="text-xl font-bold font-heading">Career AI Assistant</SheetTitle>
+                <p className="text-xs text-slate-600">Connected to your job data</p>
+              </div>
             </div>
-            Career AI Assistant
-          </SheetTitle>
-          <p className="text-sm text-slate-600">Ask me anything about your job search</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNewChat}
+                className="rounded-full"
+                title="New Chat"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearChat}
+                className="rounded-full text-rose-600 hover:bg-rose-50"
+                title="Clear Chat"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
