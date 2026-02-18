@@ -1429,6 +1429,110 @@ async def upload_resume(file: UploadFile = File(...), user_id: str = Depends(get
         logger.error(f"Resume upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
 
+# ============ TRASH & RESTORE ROUTES ============
+
+@api_router.get("/trash")
+async def get_trash(user_id: str = Depends(get_current_user)):
+    """Get all soft-deleted items from all collections"""
+    deleted_items = {
+        "jobs": [],
+        "companies": [],
+        "contacts": [],
+        "todos": [],
+        "knowledge": [],
+        "reminders": []
+    }
+    
+    # Get deleted jobs
+    jobs = await db.jobs.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["jobs"] = [{"id": j["id"], "title": j["title"], "company": j["company"], "deleted_at": j.get("deleted_at"), "type": "job"} for j in jobs]
+    
+    # Get deleted companies
+    companies = await db.companies.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["companies"] = [{"id": c["id"], "name": c["name"], "deleted_at": c.get("deleted_at"), "type": "company"} for c in companies]
+    
+    # Get deleted contacts
+    contacts = await db.contacts.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["contacts"] = [{"id": c["id"], "name": c["name"], "deleted_at": c.get("deleted_at"), "type": "contact"} for c in contacts]
+    
+    # Get deleted todos
+    todos = await db.todos.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["todos"] = [{"id": t["id"], "title": t["title"], "deleted_at": t.get("deleted_at"), "type": "todo"} for t in todos]
+    
+    # Get deleted knowledge
+    knowledge = await db.knowledge.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["knowledge"] = [{"id": k["id"], "title": k["title"], "deleted_at": k.get("deleted_at"), "type": "knowledge"} for k in knowledge]
+    
+    # Get deleted reminders
+    reminders = await db.reminders.find({"user_id": user_id, "is_deleted": True}, {"_id": 0}).to_list(100)
+    deleted_items["reminders"] = [{"id": r["id"], "message": r["message"], "deleted_at": r.get("deleted_at"), "type": "reminder"} for r in reminders]
+    
+    return deleted_items
+
+@api_router.post("/trash/restore/{item_type}/{item_id}")
+async def restore_item(item_type: str, item_id: str, user_id: str = Depends(get_current_user)):
+    """Restore a soft-deleted item"""
+    collection_map = {
+        "job": "jobs",
+        "company": "companies",
+        "contact": "contacts",
+        "todo": "todos",
+        "knowledge": "knowledge",
+        "reminder": "reminders"
+    }
+    
+    collection_name = collection_map.get(item_type)
+    if not collection_name:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    
+    collection = db[collection_name]
+    result = await collection.update_one(
+        {"id": item_id, "user_id": user_id, "is_deleted": True},
+        {"$set": {"is_deleted": False, "deleted_at": None}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail=f"{item_type.title()} not found in trash")
+    
+    return {"message": f"{item_type.title()} restored successfully"}
+
+@api_router.delete("/trash/{item_type}/{item_id}")
+async def permanently_delete_item(item_type: str, item_id: str, user_id: str = Depends(get_current_user)):
+    """Permanently delete an item from trash"""
+    collection_map = {
+        "job": "jobs",
+        "company": "companies",
+        "contact": "contacts",
+        "todo": "todos",
+        "knowledge": "knowledge",
+        "reminder": "reminders"
+    }
+    
+    collection_name = collection_map.get(item_type)
+    if not collection_name:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    
+    collection = db[collection_name]
+    result = await collection.delete_one({"id": item_id, "user_id": user_id, "is_deleted": True})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail=f"{item_type.title()} not found in trash")
+    
+    return {"message": f"{item_type.title()} permanently deleted"}
+
+@api_router.delete("/trash/empty")
+async def empty_trash(user_id: str = Depends(get_current_user)):
+    """Empty all trash for the user"""
+    collections = ["jobs", "companies", "contacts", "todos", "knowledge", "reminders"]
+    
+    total_deleted = 0
+    for coll_name in collections:
+        collection = db[coll_name]
+        result = await collection.delete_many({"user_id": user_id, "is_deleted": True})
+        total_deleted += result.deleted_count
+    
+    return {"message": f"Permanently deleted {total_deleted} items"}
+
 # ============ ANALYTICS ROUTES ============
 
 @api_router.get("/analytics/dashboard")
