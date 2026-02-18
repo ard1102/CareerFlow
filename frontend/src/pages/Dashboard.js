@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { jobsApi, analyticsApi } from '../lib/api';
+import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Plus, Briefcase, CheckCircle2, Clock, XCircle, Ghost, Gift } from 'lucide-react';
 import { getStatusColor, formatDate } from '../lib/utils';
