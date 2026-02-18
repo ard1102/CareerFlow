@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Send, Bot, User } from 'lucide-react';
+import { Textarea } from './ui/textarea';
+import { Send, Bot, User, Trash2, Plus } from 'lucide-react';
 import { chatApi, llmConfigApi } from '../lib/api';
+import api from '../lib/api';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
