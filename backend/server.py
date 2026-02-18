@@ -496,10 +496,14 @@ async def get_company(company_id: str, user_id: str = Depends(get_current_user))
 
 @api_router.delete("/companies/{company_id}")
 async def delete_company(company_id: str, user_id: str = Depends(get_current_user)):
-    result = await db.companies.delete_one({"id": company_id, "user_id": user_id})
-    if result.deleted_count == 0:
+    # Soft delete
+    result = await db.companies.update_one(
+        {"id": company_id, "user_id": user_id, "is_deleted": {"$ne": True}},
+        {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Company not found")
-    return {"message": "Company deleted successfully"}
+    return {"message": "Company moved to trash", "can_undo": True}
 
 # ============ CONTACTS ROUTES ============
 
