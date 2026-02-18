@@ -433,7 +433,7 @@ async def create_job(job: JobCreate, user_id: str = Depends(get_current_user)):
 
 @api_router.get("/jobs", response_model=List[Job])
 async def get_jobs(user_id: str = Depends(get_current_user)):
-    jobs = await db.jobs.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    jobs = await db.jobs.find({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0}).to_list(1000)
     return [deserialize_doc(job) for job in jobs]
 
 @api_router.get("/jobs/{job_id}", response_model=Job)
