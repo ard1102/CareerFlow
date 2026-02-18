@@ -231,6 +231,8 @@ class Knowledge(BaseModel):
     title: str
     content: str
     tags: Optional[List[str]] = []
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PromptCreate(BaseModel):
