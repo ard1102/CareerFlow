@@ -69,14 +69,29 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
     return ""
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
-    """Extract text from DOCX file"""
+    """Extract text from DOCX file including tables"""
     try:
+        from docx import Document
         docx_file = io.BytesIO(file_bytes)
         doc = Document(docx_file)
-        text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
-        return text.strip()
+        
+        text_parts = []
+        
+        # Extract paragraphs
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip():
+                text_parts.append(paragraph.text.strip())
+        
+        # Extract tables (resumes often have tabular data)
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                if row_text:
+                    text_parts.append(row_text)
+        
+        return "\n".join(text_parts)
     except Exception as e:
-        print(f"Error extracting DOCX text: {e}")
+        logger.error(f"Error extracting DOCX text: {e}")
         return ""
 
 def parse_resume_with_ai(resume_text: str) -> Dict:
