@@ -53,6 +53,7 @@ const SettingsPage = () => {
     { value: 'openai', label: 'OpenAI (GPT)' },
     { value: 'anthropic', label: 'Anthropic (Claude)' },
     { value: 'gemini', label: 'Google Gemini' },
+    { value: 'openrouter', label: 'OpenRouter (Multiple Models)' },
     { value: 'ollama', label: 'Ollama (Local)' },
     { value: 'openai_compatible', label: 'OpenAI-Compatible (LM Studio, vLLM, etc.)' },
   ];
