@@ -1,7 +1,7 @@
 {
   "summary": {
-    "total_tests": 15,
-    "passed": 15,
+    "total_tests": 38,
+    "passed": 38,
     "failed": 0,
     "success_rate": 100.0
   },
@@ -18,7 +18,7 @@
       "test": "Login with existing test user",
       "success": true,
       "response": {
-        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxODYwN2NiMi05ODcwLTQ1ZTUtOTc0MC04ZGY0YjM3YzBhNTUiLCJleHAiOjE3NzM5NzM1MjF9.0NQgIiM90_8nMlXDZ_QFwGWioJh2jeMHN7IxY-BsSEI",
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxODYwN2NiMi05ODcwLTQ1ZTUtOTc0MC04ZGY0YjM3YzBhNTUiLCJleHAiOjE3NzM5NzQ2NzB9.-a4yRj2av0SgjFmDlUnbRtyG4XeU59jvsdDFdV8tNCU",
         "token_type": "bearer"
       },
       "error": null
@@ -41,7 +41,7 @@
       "test": "Register new user",
       "success": true,
       "response": {
-        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmU1MWU2Yi1mZGZjLTQzY2ItYWUyZS02NTVlMzA3ZmYwMzgiLCJleHAiOjE3NzM5NzM1MjJ9.Su4OusP_PoJX5R9yvtWvty-G1G8ffFwf_olRl0SQIoY",
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NDViNmRlMC1lN2JjLTRmYjctYjYzNC1mM2U3MTg4OTg1M2MiLCJleHAiOjE3NzM5NzQ2NzF9.ufmXyS2T5b6WcqIyoHuiKguDzjw6Ix1YqrA4mGyxR4A",
         "token_type": "bearer"
       },
       "error": null
@@ -121,6 +121,42 @@
           "notes": null,
           "created_at": "2026-02-18T02:24:01.016641Z",
           "updated_at": "2026-02-18T02:24:01.016643Z"
+        },
+        {
+          "id": "69947cd5-7f90-4afd-bfa3-ea53d5eebd0d",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Test Frontend Engineer",
+          "company": "Frontend Test Corp",
+          "posting_url": "",
+          "description": "",
+          "pay": "$120k - $160k",
+          "work_auth": "",
+          "location": "San Francisco, CA",
+          "status": "pending",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": null,
+          "notes": "Test job created via frontend automation",
+          "created_at": "2026-02-18T02:25:52.324899Z",
+          "updated_at": "2026-02-18T02:25:52.324900Z"
+        },
+        {
+          "id": "5f968579-5654-4b1a-b4e0-7798a1b164bb",
+          "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+          "title": "Machine Learning Engineer",
+          "company": "AI Startup",
+          "posting_url": null,
+          "description": "We are looking for a Machine Learning Engineer with 3+ years of experience in Python, TensorFlow, PyTorch, and AWS. Strong knowledge of ML algorithms, deep learning, and data pipelines required.",
+          "pay": "$160k - $200k",
+          "work_auth": null,
+          "location": "Remote",
+          "status": "interview",
+          "contacts": [],
+          "resume_submitted": false,
+          "applied_date": null,
+          "notes": null,
+          "created_at": "2026-02-18T02:42:54.596759Z",
+          "updated_at": "2026-02-18T02:42:54.596761Z"
         }
       ],
       "error": null
@@ -129,7 +165,7 @@
       "test": "Create new job",
       "success": true,
       "response": {
-        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "id": "67b0fefb-ff7c-43bb-9159-890e216bad8e",
         "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
         "title": "Software Engineer Test",
         "company": "Test Company Inc",
@@ -143,8 +179,8 @@
         "resume_submitted": false,
         "applied_date": null,
         "notes": "Test job created by automated test",
-        "created_at": "2026-02-18T02:25:22.450716Z",
-        "updated_at": "2026-02-18T02:25:22.450717Z"
+        "created_at": "2026-02-18T02:44:31.462254Z",
+        "updated_at": "2026-02-18T02:44:31.462255Z"
       },
       "error": null
     },
@@ -152,7 +188,7 @@
       "test": "Get specific job",
       "success": true,
       "response": {
-        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "id": "67b0fefb-ff7c-43bb-9159-890e216bad8e",
         "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
         "title": "Software Engineer Test",
         "company": "Test Company Inc",
@@ -166,8 +202,8 @@
         "resume_submitted": false,
         "applied_date": null,
         "notes": "Test job created by automated test",
-        "created_at": "2026-02-18T02:25:22.450716Z",
-        "updated_at": "2026-02-18T02:25:22.450717Z"
+        "created_at": "2026-02-18T02:44:31.462254Z",
+        "updated_at": "2026-02-18T02:44:31.462255Z"
       },
       "error": null
     },
@@ -175,7 +211,7 @@
       "test": "Update job",
       "success": true,
       "response": {
-        "id": "d8e87232-4001-43e8-8d4e-567d743a7ccc",
+        "id": "67b0fefb-ff7c-43bb-9159-890e216bad8e",
         "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
         "title": "Software Engineer Test",
         "company": "Test Company Inc",
@@ -187,10 +223,10 @@
         "status": "applied",
         "contacts": [],
         "resume_submitted": false,
-        "applied_date": "2026-02-18T02:25:22.707337Z",
+        "applied_date": "2026-02-18T02:44:31.728522Z",
         "notes": "Updated by automated test",
-        "created_at": "2026-02-18T02:25:22.450716Z",
-        "updated_at": "2026-02-18T02:25:22.707333Z"
+        "created_at": "2026-02-18T02:44:31.462254Z",
+        "updated_at": "2026-02-18T02:44:31.728519Z"
       },
       "error": null
     },
@@ -206,32 +242,18 @@
       "test": "Get dashboard analytics",
       "success": true,
       "response": {
-        "total": 4,
+        "total": 6,
         "applied": 1,
-        "interview": 1,
+        "interview": 2,
         "offer": 0,
         "rejected": 1,
         "ghosted": 0,
-        "pending": 1
+        "pending": 2
       },
       "error": null
     },
     {
       "test": "Get LLM config",
-      "success": true,
-      "response": {
-        "id": "de18102a-a5ae-4e50-8055-181e681dbeaa",
-        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
-        "provider": "openai",
-        "model": "gpt-3.5-turbo",
-        "api_key": "test-api-key-placeholder",
-        "base_url": "",
-        "created_at": "2026-02-18T02:25:12.469294+00:00"
-      },
-      "error": null
-    },
-    {
-      "test": "Create/Update LLM config",
       "success": true,
       "response": {
         "id": "7a51ee0d-c728-4aa8-8034-64ac6cb7bf61",
@@ -240,7 +262,21 @@
         "model": "gpt-3.5-turbo",
         "api_key": "test-api-key-placeholder",
         "base_url": "",
-        "created_at": "2026-02-18T02:25:23.244520Z"
+        "created_at": "2026-02-18T02:25:23.244520+00:00"
+      },
+      "error": null
+    },
+    {
+      "test": "Create/Update LLM config",
+      "success": true,
+      "response": {
+        "id": "6c04fddf-8284-4b8f-933f-c4d2ef9825a8",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "api_key": "test-api-key-placeholder",
+        "base_url": "",
+        "created_at": "2026-02-18T02:44:32.312567Z"
       },
       "error": null
     },
@@ -254,16 +290,33 @@
       "test": "Create company",
       "success": true,
       "response": {
-        "id": "ad7a5e6f-8903-4928-8f03-e2e17227c086",
+        "id": "8bcca9ac-04fd-4d32-a465-fb0e68ddffc6",
         "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
         "name": "Test Company Ltd",
         "about": "Test company for automated testing",
         "stem_support": true,
         "visa_sponsor": true,
         "employee_count": "100-500",
-        "research": null,
-        "user_comments": null,
-        "created_at": "2026-02-18T02:25:23.538236Z"
+        "research": "Great company culture",
+        "user_comments": "Definitely want to work here",
+        "created_at": "2026-02-18T02:44:32.577853Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Get specific company",
+      "success": true,
+      "response": {
+        "id": "8bcca9ac-04fd-4d32-a465-fb0e68ddffc6",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "name": "Test Company Ltd",
+        "about": "Test company for automated testing",
+        "stem_support": true,
+        "visa_sponsor": true,
+        "employee_count": "100-500",
+        "research": "Great company culture",
+        "user_comments": "Definitely want to work here",
+        "created_at": "2026-02-18T02:44:32.577853Z"
       },
       "error": null
     },
@@ -274,7 +327,320 @@
         "message": "Company deleted successfully"
       },
       "error": null
+    },
+    {
+      "test": "Get all contacts",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create contact",
+      "success": true,
+      "response": {
+        "id": "937f6fbe-dcf3-4622-b582-86d611c3b9bc",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "name": "John Test",
+        "email": "john.test@example.com",
+        "phone": "+1-555-123-4567",
+        "company_id": null,
+        "role": "Hiring Manager",
+        "how_met": "LinkedIn",
+        "notes": "Very friendly recruiter",
+        "last_touch_date": "2024-01-15T00:00:00",
+        "created_at": "2026-02-18T02:44:33.146867Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete contact",
+      "success": true,
+      "response": {
+        "message": "Contact deleted successfully"
+      },
+      "error": null
+    },
+    {
+      "test": "Get all todos",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create todo",
+      "success": true,
+      "response": {
+        "id": "fa0e04c2-dcdf-4c21-ad63-da78620ae566",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Update resume for ML position",
+        "completed": false,
+        "category": "job-search",
+        "due_date": "2024-02-01T10:00:00Z",
+        "created_at": "2026-02-18T02:44:33.914715Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Toggle todo completion",
+      "success": true,
+      "response": {
+        "message": "Todo updated"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete todo",
+      "success": true,
+      "response": {
+        "message": "Todo deleted"
+      },
+      "error": null
+    },
+    {
+      "test": "Get all knowledge",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create knowledge",
+      "success": true,
+      "response": {
+        "id": "c6440381-1633-4d2e-add6-03efde41dd82",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "React Performance Tips",
+        "content": "1. Use React.memo for expensive components\n2. Implement useMemo for expensive calculations\n3. Use useCallback for event handlers\n4. Optimize bundle size with code splitting",
+        "tags": [
+          "react",
+          "performance",
+          "optimization"
+        ],
+        "created_at": "2026-02-18T02:44:34.434529Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete knowledge",
+      "success": true,
+      "response": {
+        "message": "Knowledge deleted"
+      },
+      "error": null
+    },
+    {
+      "test": "Get all prompts",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create prompt",
+      "success": true,
+      "response": {
+        "id": "1d5dae02-8278-47b7-84e8-d6df396b410b",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Cover Letter Template",
+        "content": "Write a compelling cover letter for a [POSITION] role at [COMPANY]. Highlight my experience in [SKILLS] and explain why I'm passionate about [COMPANY_MISSION].",
+        "category": "cover-letter",
+        "created_at": "2026-02-18T02:44:34.789627Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete prompt",
+      "success": true,
+      "response": {
+        "message": "Prompt deleted"
+      },
+      "error": null
+    },
+    {
+      "test": "Parse job description",
+      "success": true,
+      "response": {
+        "skills": [
+          "Python",
+          "Node.js",
+          "React",
+          "MongoDB",
+          "PostgreSQL",
+          "AWS",
+          "Docker"
+        ],
+        "requirements": [
+          "Strong experience with React, Node.js, and Python",
+          "Bachelor's degree in Computer Science",
+          "Experience with AWS and Docker",
+          "Health insurance",
+          "Knowledge of MongoDB and PostgreSQL"
+        ],
+        "qualifications": [],
+        "responsibilities": [],
+        "experience_years": 3,
+        "education": [
+          "- Bachelor's degree in Computer Science"
+        ],
+        "benefits": [
+          "401K",
+          "Health Insurance",
+          "Remote"
+        ]
+      },
+      "error": null
+    },
+    {
+      "test": "Parse email for job info",
+      "success": true,
+      "response": {
+        "title": "Software Engineer",
+        "company": null,
+        "location": "Tech",
+        "pay": "$120,000 - $150,000",
+        "posting_url": "https://techcorp.com/jobs/senior-engineer-123",
+        "description": "\n        Subject: Software Engineer Position at TechCorp\n\n        Hi there,\n\n        I hope this email finds you well. We have an exciting opportunity for a Senior Software Engineer at TechCorp in San Francisco, CA. \n\n        The position offers a salary range of $120,000 - $150,000 and includes full benefits. You can view the full job description at https://techcorp.com/jobs/senior-engineer-123\n\n        Best regards,\n        Jane Smith\n        Hiring Manager at TechCorp\n        "
+      },
+      "error": null
+    },
+    {
+      "test": "Scrape job from URL",
+      "success": true,
+      "response": {
+        "title": null,
+        "company": null,
+        "location": null,
+        "description": null,
+        "pay": null,
+        "source": "Indeed",
+        "posting_url": "https://www.indeed.com/viewjob?jk=test123"
+      },
+      "error": null
+    },
+    {
+      "test": "Search jobs",
+      "success": true,
+      "response": [
+        {
+          "portal": "Indeed",
+          "search_url": "https://www.indeed.com/jobs?q=Python+Developer&l=Remote",
+          "note": "Visit this URL to see job listings, then paste individual job URLs to scrape"
+        },
+        {
+          "portal": "LinkedIn",
+          "search_url": "https://www.linkedin.com/jobs/search/?keywords=Python%20Developer&location=Remote",
+          "note": "LinkedIn requires login. Visit URL in browser, then copy job URLs"
+        },
+        {
+          "portal": "Monster",
+          "search_url": "https://www.monster.com/jobs/search?q=Python-Developer&where=Remote",
+          "note": "Visit this URL to see job listings, then paste individual job URLs to scrape"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test": "Knowledge semantic search",
+      "success": true,
+      "response": [],
+      "error": null
+    },
+    {
+      "test": "Create ML job for interview prep",
+      "success": true,
+      "response": {
+        "id": "881b9d1a-7988-4db2-983e-4e8f88096159",
+        "user_id": "18607cb2-9870-45e5-9740-8df4b37c0a55",
+        "title": "Machine Learning Engineer",
+        "company": "ML Corp",
+        "posting_url": null,
+        "description": "We need an ML engineer with Python, TensorFlow, and AWS experience",
+        "pay": null,
+        "work_auth": null,
+        "location": null,
+        "status": "interview",
+        "contacts": [],
+        "resume_submitted": false,
+        "applied_date": null,
+        "notes": null,
+        "created_at": "2026-02-18T02:44:35.940247Z",
+        "updated_at": "2026-02-18T02:44:35.940249Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Get interview preparation",
+      "success": true,
+      "response": {
+        "job_title": "Machine Learning Engineer",
+        "company": "ML Corp",
+        "questions": [
+          {
+            "category": "Technical",
+            "skill": "Python",
+            "question": "Can you explain the difference between list and tuple in Python? When would you use each?"
+          },
+          {
+            "category": "Technical",
+            "skill": "AWS",
+            "question": "What is the difference between EC2 and Lambda? When would you use each?"
+          },
+          {
+            "category": "Behavioral",
+            "question": "Tell me about a time you faced a challenging problem and how you solved it."
+          },
+          {
+            "category": "Behavioral",
+            "question": "Describe a situation where you had to work with a difficult team member."
+          },
+          {
+            "category": "Behavioral",
+            "question": "How do you handle tight deadlines and pressure?"
+          }
+        ],
+        "skills_to_prepare": [
+          "Python",
+          "TensorFlow",
+          "AWS"
+        ]
+      },
+      "error": null
+    },
+    {
+      "test": "Get learning path",
+      "success": true,
+      "response": {
+        "job_title": "Machine Learning Engineer",
+        "company": "ML Corp",
+        "missing_skills": [
+          "Python",
+          "TensorFlow",
+          "AWS"
+        ],
+        "learning_path": [
+          {
+            "skill": "Python",
+            "category": "Programming",
+            "difficulty": "Beginner",
+            "time": "2-3 months"
+          },
+          {
+            "skill": "AWS",
+            "category": "Cloud",
+            "difficulty": "Intermediate",
+            "time": "2-3 months"
+          }
+        ],
+        "estimated_time": "4-8 months"
+      },
+      "error": null
+    },
+    {
+      "test": "Delete ML job (cleanup)",
+      "success": true,
+      "response": {
+        "message": "Job deleted successfully"
+      },
+      "error": null
     }
   ],
-  "timestamp": "2026-02-18T02:25:23.691425"
+  "timestamp": "2026-02-18T02:44:36.329508"
 }
