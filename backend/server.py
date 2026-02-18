@@ -529,6 +529,87 @@ async def send_chat_message(msg: ChatMessageCreate, user_id: str = Depends(get_c
                     "description": "Get statistics about job applications (total, by status).",
                     "parameters": {"type": "object", "properties": {}}
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "create_company",
+                    "description": "Add a new company to track.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Company name"},
+                            "about": {"type": "string", "description": "About the company"},
+                            "visa_sponsor": {"type": "boolean", "description": "Does company sponsor visas"},
+                            "stem_support": {"type": "boolean", "description": "STEM-OPT support"}
+                        },
+                        "required": ["name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "create_contact",
+                    "description": "Add a new contact to your network.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Contact's name"},
+                            "email": {"type": "string", "description": "Email address"},
+                            "company": {"type": "string", "description": "Company name"},
+                            "role": {"type": "string", "description": "Their role/title"},
+                            "notes": {"type": "string", "description": "Notes about the contact"}
+                        },
+                        "required": ["name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "create_knowledge",
+                    "description": "Save an article, note, or learning to knowledge base.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "title": {"type": "string", "description": "Title of the article/note"},
+                            "content": {"type": "string", "description": "The content"},
+                            "tags": {"type": "array", "items": {"type": "string"}, "description": "Tags for organization"}
+                        },
+                        "required": ["title", "content"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "parse_job_description",
+                    "description": "Parse a job description to extract skills, requirements, and other details.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "description": {"type": "string", "description": "The job description text"}
+                        },
+                        "required": ["description"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_companies",
+                    "description": "Get list of tracked companies.",
+                    "parameters": {"type": "object", "properties": {}}
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_contacts",
+                    "description": "Get list of contacts in your network.",
+                    "parameters": {"type": "object", "properties": {}}
+                }
             }
         ]
         
