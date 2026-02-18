@@ -71,6 +71,48 @@ const ProfilePage = () => {
     }
   };
 
+  const handleResumeUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload a PDF or DOCX file');
+      return;
+    }
+
+    setUploading(true);
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+      const response = await api.post('/resume/upload', uploadFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const parsed = response.data.parsed_data;
+      
+      // Pre-fill form with parsed data
+      setFormData(prev => ({
+        ...prev,
+        name: parsed.name || prev.name,
+        resume_summary: parsed.summary || prev.resume_summary,
+        skills: parsed.skills ? parsed.skills.join(', ') : prev.skills,
+        projects: parsed.projects ? parsed.projects.join('\n') : prev.projects,
+        education: parsed.education ? parsed.education.join('\n') : prev.education,
+        work_authorization: parsed.work_authorization || prev.work_authorization,
+        years_of_experience: parsed.experience_years || prev.years_of_experience
+      }));
+
+      toast.success('Resume parsed! Review and save your profile.');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to parse resume');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-4xl mx-auto">
