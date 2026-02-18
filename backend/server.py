@@ -238,6 +238,25 @@ class Prompt(BaseModel):
     category: Optional[str] = "general"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class JobPortalCreate(BaseModel):
+    name: str
+    url: str
+    username: Optional[str] = None
+    notes: Optional[str] = None
+
+class JobPortal(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    url: str
+    username: Optional[str] = None
+    notes: Optional[str] = None
+    success_rate: Optional[float] = 0.0
+    jobs_applied: Optional[int] = 0
+    last_used: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============ HELPER FUNCTIONS ============
 
 def hash_password(password: str) -> str:
